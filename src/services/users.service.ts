@@ -47,6 +47,10 @@ class UsersService extends APIBase {
   async registerFromPayment<T = RegisterFromPaymentResponse>(body: RegisterFromPaymentBody, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.post<T>('users/register-from-payment', body, { 'Content-Type': 'application/json' }, config)
   }
+
+  async getById<T = { message: string; user: Record<string, unknown> }>(userId: string | number, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.get<T>(`users/${userId}`, undefined, config)
+  }
 }
 
 const usersService = new UsersService()
