@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PayphoneService from '@/services/payphone.service'
 import usersService, { type RegisterFromPaymentBody, type RegisterFromPaymentResponse } from '@/services/users.service'
+import { useCheckoutStore } from '@/stores/checkout'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +14,7 @@ const status = ref<'Pending' | 'Approved' | 'Rejected' | ''>('')
 const transactionId = ref('')
 const clientTransactionId = ref('')
 const user = ref<{ name?: string; email?: string } | null>(null)
+const checkoutStore = useCheckoutStore()
 
 function goHome() {
   router.push('/')
@@ -29,8 +31,8 @@ onMounted(async () => {
   transactionId.value = id
   clientTransactionId.value = ctId
 
-  const pendingRaw = localStorage.getItem('pending_checkout')
-  user.value = pendingRaw ? JSON.parse(pendingRaw) : null
+  checkoutStore.hydrate()
+  user.value = { name: checkoutStore.name, email: checkoutStore.email }
 
   if (!id || !ctId) {
     error.value = 'Parámetros inválidos en la respuesta de pago.'
@@ -50,8 +52,8 @@ onMounted(async () => {
       const refName = parts.length >= 3 ? parts[parts.length - 2] : undefined
       const refEmail = parts.length >= 2 ? parts[parts.length - 1] : undefined
 
-      const finalEmail = String(resAny.email || user.value?.email || refEmail || 'sin-correo@fudmaster.com')
-      const finalName = String(refName || user.value?.name || 'Usuario Fudmaster')
+      const finalEmail = String(user.value?.email || resAny.email || refEmail || 'sin-correo@fudmaster.com')
+      const finalName = String(user.value?.name || refName || 'Usuario Fudmaster')
 
       const info = {
         name: finalName,
@@ -71,7 +73,7 @@ onMounted(async () => {
         transactionId: res.transactionId,
         amount: amountDollars,
         currency: String(resAny.currency || 'USD'),
-        reference: refStr || `Plan Expert - FM-EXPERT-ANNUAL - ${finalName} - ${finalEmail}`,
+        reference: `Plan Expert - FM-EXPERT-ANNUAL - ${finalName} - ${finalEmail}`,
       }
 
       try {
@@ -79,7 +81,7 @@ onMounted(async () => {
         if (data?.user) {
           localStorage.setItem('user', JSON.stringify(data.user))
         }
-        try { localStorage.removeItem('pending_checkout') } catch { }
+        checkoutStore.clear()
       } catch (err: any) {
         console.error('Error registrando usuario desde pago', err)
       }
