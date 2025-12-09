@@ -8,7 +8,10 @@
 // Usage stays the same across the app: lighten($color, 10%), darken($color, 10%)
 // Internally uses modern Sass color APIs to avoid deprecation warnings.
 @function _to-percent($amount) {
-  @return if(math.unit($amount) == '%', $amount, $amount * 1%);
+  @if math.unit($amount) == '%' {
+    @return $amount;
+  }
+  @return $amount * 1%;
 }
 
 @function lighten($c, $amount, $method: 'adjust') {
