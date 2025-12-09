@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Hero from './components/Hero.vue';
 import Problem from './components/Problem.vue';
+import SocialProof from './components/SocialProof.vue';
 import Solution from './components/Solution.vue';
 import UrgentBar from './components/UrgentBar.vue';
 </script>
@@ -11,6 +12,7 @@ import UrgentBar from './components/UrgentBar.vue';
     <Hero />
     <Problem />
     <Solution />
+    <SocialProof />
   </div>
 </template>
 
