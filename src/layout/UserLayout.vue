@@ -1,10 +1,11 @@
 <script setup lang="ts">
+  import UserSidebar from '../components/UserSidebar.vue';
 </script>
 
 <template>
   <div class="layout main-wrapper">
     <div class="layout-menu-wrapper">
-      aqui va el menu
+      <UserSidebar />
     </div>
     <div class="layout-view-wrapper">
       <RouterView />

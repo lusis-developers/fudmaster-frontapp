@@ -12,7 +12,7 @@
 
 <style lang="scss">
   .app-container  {
-    background-color: blue;
+    background-color: $FUDMASTER-LIGHT;
     min-height: 100vh;
     width: 100%;
     &-view {
