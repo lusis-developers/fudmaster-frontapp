@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import usersService, { type LoginBody, type LoginResponse } from '@/services/users.service'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -21,6 +23,15 @@ async function submit() {
     const body: LoginBody = { email: email.value.trim(), password: password.value }
     const { data } = await usersService.login<LoginResponse>(body)
     localStorage.setItem('access_token', data.token)
+    try {
+      const uid = (data.user as any)?.id || (data.user as any)?._id || (data.user as any)?.user_id
+      const name = (data.user as any)?.name || null
+      const emailVal = (data.user as any)?.email || null
+      if (uid) {
+        localStorage.setItem('user_id', String(uid))
+      }
+      userStore.setUser({ id: uid, name, email: emailVal })
+    } catch {}
     router.push('/')
   } catch (e: any) {
     error.value = e?.message || 'Error al iniciar sesión'
