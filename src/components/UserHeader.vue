@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import usersService from '@/services/users.service'
+import gamificationService from '@/services/gamification.service'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
   showMenuButton: {
@@ -13,8 +15,37 @@ const props = defineProps({
 const emit = defineEmits(['toggleSidebar'])
 
 const router = useRouter()
+const userStore = useUserStore()
 const isLoggedIn = ref(!!localStorage.getItem('access_token'))
 const route = useRoute()
+
+const userId = computed(() => {
+  if (!userStore.id) userStore.hydrate()
+  const uid = userStore.id
+  return typeof uid === 'number' ? String(uid) : (uid || '')
+})
+
+const points = ref<number | null>(null)
+const pointsLoading = ref(false)
+const pointsError = ref('')
+
+async function fetchPoints() {
+  if (!isLoggedIn.value || !userId.value) { points.value = null; return }
+  pointsLoading.value = true
+  pointsError.value = ''
+  try {
+    const { data, headers } = await gamificationService.getUserPoints(userId.value)
+    const headerVal = Number((headers as any)['x-user-points'] || (headers as any)['X-User-Points'] || NaN)
+    const bodyVal = Number((data as any)?.points ?? NaN)
+    const final = Number.isFinite(headerVal) ? headerVal : (Number.isFinite(bodyVal) ? bodyVal : 0)
+    points.value = final
+  } catch (e: any) {
+    pointsError.value = e?.message || 'Error al obtener puntos'
+    points.value = null
+  } finally {
+    pointsLoading.value = false
+  }
+}
 
 function handleMenuClick() {
   emit('toggleSidebar')
@@ -38,11 +69,18 @@ async function logout() {
 
 onMounted(() => {
   window.addEventListener('auth:token-expired', onTokenExpired as EventListener)
+  fetchPoints()
+  window.addEventListener('gamification:points-refresh', fetchPoints as EventListener)
+  window.addEventListener('comments:created', fetchPoints as EventListener)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('auth:token-expired', onTokenExpired as EventListener)
+  window.removeEventListener('gamification:points-refresh', fetchPoints as EventListener)
+  window.removeEventListener('comments:created', fetchPoints as EventListener)
 })
+
+watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
 </script>
 
 <template>
@@ -61,6 +99,8 @@ onBeforeUnmount(() => {
           <div class="user-pill" title="Sesión iniciada">
             <i class="fa-solid fa-user"></i>
             Mi cuenta
+            <span v-if="pointsLoading" class="points-chip loading"><i class="fa-solid fa-spinner fa-spin"></i></span>
+            <span v-else-if="points !== null" class="points-chip"><i class="fa-solid fa-trophy"></i> {{ points }}</span>
           </div>
           <button class="logout-button" @click="logout">
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -136,17 +176,35 @@ onBeforeUnmount(() => {
             &:hover { filter: brightness(0.95); }
           }
 
-          .user-pill {
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $white;
+  color: $FUDMASTER-DARK;
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+          .points-chip {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: $white;
-            color: $FUDMASTER-DARK;
-            border: 1px solid #e0e0e0;
+            gap: 6px;
+            background: $FUDMASTER-GREEN;
+            color: $white;
             border-radius: 999px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-left: 6px;
+          }
+
+          .points-chip.loading {
+            background: transparent;
+            color: $FUDMASTER-DARK;
+            border: 1px dashed #e0e0e0;
           }
 
           .logout-button {
