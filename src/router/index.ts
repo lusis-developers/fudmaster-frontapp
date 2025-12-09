@@ -8,6 +8,7 @@ import PublicLayout from "../layout/PublicLayout.vue";
 import UserHome from "../views/User/UserHome.vue";
 import MyCourses from "../views/User/MyCourses.vue";
 import AllCourses from "../views/User/AllCourses.vue";
+import CourseDetail from "../views/User/CourseDetail.vue";
 
 // Landingpage
 import NicoleLanding from "../views/Landing/NicoleLanding.vue";
@@ -40,6 +41,12 @@ const routes: Array<RouteRecordRaw> = [
         path: 'courses/all',
         component: AllCourses,
         meta: { title: 'Todos los cursos', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id',
+        component: CourseDetail,
+        meta: { title: 'Detalle de curso', requiresAuth: true }
       }
     ]
   },
