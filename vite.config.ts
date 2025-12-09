@@ -19,5 +19,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    allowedHosts: ['fudmaster-testing-frontend.fudmaster.com.ec']
   }
 })
