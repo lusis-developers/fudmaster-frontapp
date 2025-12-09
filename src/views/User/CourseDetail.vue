@@ -2,6 +2,7 @@
 import { onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
+import PlaylistSidebar from '@/components/lecture/PlaylistSidebar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,6 +18,23 @@ function coverOf(course: any) {
   return sanitizeUrl(course?.image_url) || sanitizeUrl(course?.coverUrl) || '/src/assets/fudmaster-color.png'
 }
 
+function flattenLectures(course: any): any[] {
+  const sections = Array.isArray(course?.lecture_sections) ? course.lecture_sections : []
+  const list: any[] = []
+  for (const s of sections) {
+    const lectures = Array.isArray(s?.lectures) ? s.lectures : []
+    for (const l of lectures) list.push(l)
+  }
+  return list.sort((a, b) => Number(a?.position || 0) - Number(b?.position || 0))
+}
+
+const firstLectureId = computed(() => {
+  const course = store.currentCourse
+  if (!course) return null as any
+  const all = flattenLectures(course)
+  return all[0]?.id || null
+})
+
 onMounted(() => {
   if (id.value) store.fetchById(id.value)
 })
@@ -25,6 +43,8 @@ function openLecture(lectureId: number | string) {
   if (!id.value) return
   router.push(`/courses/${id.value}/lectures/${lectureId}`)
 }
+
+function goBack() { router.back() }
 </script>
 
 <template>
@@ -42,40 +62,28 @@ function openLecture(lectureId: number | string) {
         <i class="fa-regular fa-face-meh" /> No se encontró el curso.
       </div>
 
-      <div v-else class="content">
-        <div class="cover">
-          <img :src="coverOf(store.currentCourse)" alt="course cover" />
+      <div v-else>
+        <div class="header">
+          <button class="back" type="button" @click="goBack"><i class="fa-solid fa-arrow-left" /> Volver</button>
+          <h2 class="title"><i class="fa-solid fa-graduation-cap" /> {{ store.currentCourse.name || store.currentCourse.title }}</h2>
         </div>
-        <div class="info">
-          <h2 class="title">{{ store.currentCourse.name || store.currentCourse.title }}</h2>
-          <p class="subtitle">{{ store.currentCourse.heading || store.currentCourse.shortDescription || store.currentCourse.description }}</p>
-          <div class="author" v-if="store.currentCourse.author_bio">
-            <span class="author-name"><i class="fa-solid fa-user" /> {{ store.currentCourse.author_bio.name }}</span>
-          </div>
-          <div v-if="store.currentLecture" class="lecture-detail">
-            <h3 class="lecture-title"><i class="fa-solid fa-chalkboard" /> Detalle de la lección</h3>
-            <div class="lecture-card">
-              <div class="row"><span class="label">ID:</span><span>{{ store.currentLecture.id || '-' }}</span></div>
-              <div class="row"><span class="label">Posición:</span><span>{{ store.currentLecture.position ?? '-' }}</span></div>
-              <div class="row"><span class="label">Estado:</span><span>{{ store.currentLecture.is_published ? 'Publicada' : 'Borrador' }}</span></div>
+        <div class="content">
+          <div class="left">
+            <div class="cover">
+              <img :src="coverOf(store.currentCourse)" alt="course cover" />
             </div>
-          </div>
-        </div>
-        <div class="sections" v-if="Array.isArray(store.currentCourse.lecture_sections) && store.currentCourse.lecture_sections.length">
-          <h3 class="sections-title"><i class="fa-solid fa-list-check" /> Contenido del curso</h3>
-          <div class="sections-list">
-            <div class="section" v-for="s in store.currentCourse.lecture_sections" :key="s.id">
-              <div class="section-header">
-                <span class="section-name">{{ s.name }}</span>
-                <span class="badge">{{ s.lectures?.length || 0 }} lecciones</span>
+            <div class="info">
+              <p class="subtitle">{{ store.currentCourse.heading || store.currentCourse.shortDescription || store.currentCourse.description }}</p>
+              <div class="author" v-if="store.currentCourse.author_bio">
+                <span class="author-name"><i class="fa-solid fa-user" /> {{ store.currentCourse.author_bio.name }}</span>
               </div>
-              <ul class="lectures">
-                <li v-for="l in s.lectures" :key="l.id" @click="openLecture(l.id)" class="lecture-item">
-                  <span>Lección {{ l.position }}</span>
-                  <i class="fa-solid fa-arrow-right" />
-                </li>
-              </ul>
+              <div class="actions">
+                <button class="cta-start" type="button" :disabled="!firstLectureId" @click="firstLectureId && openLecture(firstLectureId)"><i class="fa-solid fa-play" /> Continuar curso</button>
+              </div>
             </div>
+          </div>
+          <div class="right" v-if="Array.isArray(store.currentCourse.lecture_sections) && store.currentCourse.lecture_sections.length">
+            <PlaylistSidebar :sections="store.currentCourse.lecture_sections" :course-id="String(id)" />
           </div>
         </div>
       </div>
@@ -84,17 +92,11 @@ function openLecture(lectureId: number | string) {
 </template>
 
 <style lang="scss" scoped>
-.course-detail {
-  width: 100%;
-  padding: 24px 16px;
-}
+.course-detail { width: 100%; padding: 24px 16px; background: $white; }
+.container { max-width: 100%; margin: 0 auto; display: grid; gap: 16px; }
 
-.container {
-  max-width: 1080px;
-  margin: 0 auto;
-  display: grid;
-  gap: 16px;
-}
+.header { display: grid; gap: 8px; }
+.back { background: none; border: none; color: $FUDMASTER-GREEN; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
 
 .loading,
 .error,
@@ -115,24 +117,20 @@ function openLecture(lectureId: number | string) {
   border-color: rgba($alert-error, 0.3);
 }
 
-.content {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 960px) {
-  .content {
-    grid-template-columns: 1.4fr 1fr;
-  }
-}
+.content { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 960px) { .content { grid-template-columns: 1.4fr 1fr; } }
+@media (min-width: 1280px) { .content { grid-template-columns: 1.8fr 1fr; } }
+.left { display: grid; gap: 12px; }
+.right { display: grid; gap: 12px; }
 
 .cover img {
   width: 100%;
-  height: 280px;
+  aspect-ratio: 16 / 9;
+  height: auto;
   object-fit: cover;
   border-radius: 12px;
   display: block;
+  box-shadow: 0 20px 40px -10px rgba($FUDMASTER-DARK, 0.06);
 }
 
 .info {
@@ -146,60 +144,13 @@ function openLecture(lectureId: number | string) {
   font-size: 26px;
 }
 
-.subtitle { color: rgba($FUDMASTER-DARK, 0.6); margin: 0; font-size: 15px; }
+.subtitle { color: rgba($FUDMASTER-DARK, 0.7); margin: 0; font-size: 15px; line-height: 1.6; }
 .author { display: inline-flex; align-items: center; gap: 8px; color: rgba($FUDMASTER-DARK, 0.6); font-size: 14px; }
-.lecture-detail { display: grid; gap: 8px; margin-top: 10px; }
-.lecture-title { color: $FUDMASTER-DARK; font-size: 18px; margin: 0; display: inline-flex; align-items: center; gap: 8px; }
-.lecture-card { background: $white; border: 1px solid rgba($FUDMASTER-DARK, 0.08); border-radius: 12px; padding: 12px; display: grid; gap: 6px; }
-.row { display: flex; gap: 8px; color: rgba($FUDMASTER-DARK, 0.6); font-size: 14px; }
-.label { color: $FUDMASTER-DARK; font-weight: 600; }
+.author-name { color: $FUDMASTER-GREEN; }
+.actions { margin-top: 8px; }
+.cta-start { background: $FUDMASTER-PINK; color: $white; border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.cta-start:disabled { background: $FUDMASTER-LIGHT; color: rgba($FUDMASTER-DARK, 0.5); border: 1px solid rgba($FUDMASTER-DARK, 0.08); cursor: not-allowed; }
+.cta-start:hover { filter: brightness(0.95); }
 
-.sections {
-  grid-column: 1 / -1;
-  display: grid;
-  gap: 12px;
-}
 
-.sections-title {
-  color: $FUDMASTER-DARK;
-  margin: 12px 0 0;
-  font-size: 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sections-list {
-  display: grid;
-  gap: 12px;
-}
-
-.section { background: $white; border: 1px solid rgba($FUDMASTER-DARK, 0.08); border-radius: 12px; padding: 12px; }
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.section-name {
-  color: $FUDMASTER-DARK;
-  font-weight: 600;
-}
-
-.badge {
-  background: $FUDMASTER-LIGHT;
-  border: 1px solid rgba($FUDMASTER-DARK, 0.08);
-  color: rgba($FUDMASTER-DARK, 0.6);
-  border-radius: 999px;
-  padding: 4px 8px;
-  font-size: 12px;
-}
-
-.lectures { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-.lectures li { color: rgba($FUDMASTER-DARK, 0.6); font-size: 14px; }
-.lecture-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: $FUDMASTER-LIGHT; border: 1px solid rgba($FUDMASTER-DARK, 0.08); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
-.lecture-item:hover { border-color: $FUDMASTER-GREEN; color: $FUDMASTER-DARK; }
 </style>
