@@ -1,10 +1,13 @@
-import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
 // Layout
 import UserLayout from "../layout/UserLayout.vue";
 
 // Views
 import UserHome from "../views/User/UserHome.vue";
+
+// Landingpage
+import NicoleLanding from "../views/Landing/NicoleLanding.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -22,11 +25,18 @@ const routes: Array<RouteRecordRaw> = [
         } 
       }
     ]
+  },
+  {
+    path: '/landing-page',
+    component: NicoleLanding,
+    meta: {
+      title: 'Cambia tu vida gastronómica con Nicole y su equipo'
+    }
   }
 ]
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes
 })
 
