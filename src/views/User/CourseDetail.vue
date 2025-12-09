@@ -19,6 +19,11 @@ function coverOf(course: any) {
 onMounted(() => {
   if (id.value) store.fetchById(id.value)
 })
+
+function openLecture(lectureId: number | string) {
+  if (!id.value) return
+  store.fetchLecture(id.value, lectureId)
+}
 </script>
 
 <template>
@@ -46,6 +51,14 @@ onMounted(() => {
           <div class="author" v-if="store.currentCourse.author_bio">
             <span class="author-name"><i class="fa-solid fa-user" /> {{ store.currentCourse.author_bio.name }}</span>
           </div>
+          <div v-if="store.currentLecture" class="lecture-detail">
+            <h3 class="lecture-title"><i class="fa-solid fa-chalkboard" /> Detalle de la lección</h3>
+            <div class="lecture-card">
+              <div class="row"><span class="label">ID:</span><span>{{ store.currentLecture.id || '-' }}</span></div>
+              <div class="row"><span class="label">Posición:</span><span>{{ store.currentLecture.position ?? '-' }}</span></div>
+              <div class="row"><span class="label">Estado:</span><span>{{ store.currentLecture.is_published ? 'Publicada' : 'Borrador' }}</span></div>
+            </div>
+          </div>
         </div>
         <div class="sections" v-if="Array.isArray(store.currentCourse.lecture_sections) && store.currentCourse.lecture_sections.length">
           <h3 class="sections-title"><i class="fa-solid fa-list-check" /> Contenido del curso</h3>
@@ -56,7 +69,10 @@ onMounted(() => {
                 <span class="badge">{{ s.lectures?.length || 0 }} lecciones</span>
               </div>
               <ul class="lectures">
-                <li v-for="l in s.lectures" :key="l.id">Lección {{ l.position }}</li>
+                <li v-for="l in s.lectures" :key="l.id" @click="openLecture(l.id)" class="lecture-item">
+                  <span>Lección {{ l.position }}</span>
+                  <i class="fa-solid fa-arrow-right" />
+                </li>
               </ul>
             </div>
           </div>
@@ -129,19 +145,13 @@ onMounted(() => {
   font-size: 26px;
 }
 
-.subtitle {
-  color: #777;
-  margin: 0;
-  font-size: 15px;
-}
-
-.author {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #555;
-  font-size: 14px;
-}
+.subtitle { color: #777; margin: 0; font-size: 15px; }
+.author { display: inline-flex; align-items: center; gap: 8px; color: #555; font-size: 14px; }
+.lecture-detail { display: grid; gap: 8px; margin-top: 10px; }
+.lecture-title { color: $FUDMASTER-DARK; font-size: 18px; margin: 0; display: inline-flex; align-items: center; gap: 8px; }
+.lecture-card { background: $white; border: 1px solid #e6e6e6; border-radius: 12px; padding: 12px; display: grid; gap: 6px; }
+.row { display: flex; gap: 8px; color: #555; font-size: 14px; }
+.label { color: $FUDMASTER-DARK; font-weight: 600; }
 
 .sections {
   grid-column: 1 / -1;
@@ -192,16 +202,8 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.lectures {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.lectures li {
-  color: #555;
-  font-size: 14px;
-}
+.lectures { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.lectures li { color: #555; font-size: 14px; }
+.lecture-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: $FUDMASTER-LIGHT; border: 1px solid #e6e6e6; border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.lecture-item:hover { border-color: $FUDMASTER-GREEN; color: $FUDMASTER-DARK; }
 </style>
