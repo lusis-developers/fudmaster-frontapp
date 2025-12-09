@@ -4,6 +4,7 @@ import coursesService from '@/services/courses.service'
 export const useCoursesStore = defineStore('courses', {
   state: () => ({
     courses: [] as any[],
+    currentCourse: null as any | null,
     currentVideo: null as any | null,
     loading: false as boolean,
     error: '' as string,
@@ -36,6 +37,21 @@ export const useCoursesStore = defineStore('courses', {
         this.courses = items
       } catch (e: any) {
         this.error = e?.message || 'Error al obtener cursos'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchById(courseId: string | number) {
+      this.loading = true
+      this.error = ''
+      try {
+        const { data } = await coursesService.getById<any>(courseId)
+        const payload = data as any
+        this.currentCourse = payload?.course?.course ?? payload?.course ?? payload
+        return this.currentCourse
+      } catch (e: any) {
+        this.error = e?.message || 'Error al obtener curso'
+        return null
       } finally {
         this.loading = false
       }
