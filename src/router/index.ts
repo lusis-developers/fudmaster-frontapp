@@ -6,6 +6,8 @@ import PublicLayout from "../layout/PublicLayout.vue";
 
 // Views
 import UserHome from "../views/User/UserHome.vue";
+import MyCourses from "../views/User/MyCourses.vue";
+import AllCourses from "../views/User/AllCourses.vue";
 
 // Landingpage
 import NicoleLanding from "../views/Landing/NicoleLanding.vue";
@@ -28,6 +30,16 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           title: 'Aquí empieza tu éxito gastronómico'
         } 
+      },
+      {
+        path: 'courses',
+        component: MyCourses,
+        meta: { title: 'Mis cursos', requiresAuth: true }
+      },
+      {
+        path: 'courses/all',
+        component: AllCourses,
+        meta: { title: 'Todos los cursos', requiresAuth: true }
       }
     ]
   },
