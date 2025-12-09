@@ -1,5 +1,8 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createVueApp } from "./bootloader";
 
-createApp(App).mount('#app')
+async function main() {
+  const app = await createVueApp()
+  app.mount('#app')
+}
+
+main()
