@@ -8,6 +8,13 @@ export default defineConfig({
   plugins: [
     vue()
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "@/styles/index.scss" as *;`
+      }
+    }
+  },
   define: {
     'process.env': process.env
   },

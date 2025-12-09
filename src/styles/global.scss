@@ -1,0 +1,9 @@
+@use './colorVariables.module.scss' as *;
+@use './fonts.module.scss' as *;
+
+html,
+body {
+  background-color: $white;
+  margin: 0;
+  font-family: $font-principal;
+}
