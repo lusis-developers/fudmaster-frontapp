@@ -48,6 +48,7 @@ const playSrc = ref('')
 const blobUrl = ref('')
 const blobLoading = ref(false)
 const blobError = ref('')
+const videoReady = ref(false)
 
 async function loadBlob(url: string) {
   blobLoading.value = true
@@ -75,6 +76,7 @@ const currentUrl = computed(() => findVideoUrl())
 watch(currentUrl, async (u) => {
   resetBlob()
   playSrc.value = ''
+  videoReady.value = false
   if (!u) return
   const url = sanitizeUrl(u)
   const extMov = url.toLowerCase().endsWith('.mov')
@@ -114,17 +116,23 @@ onMounted(async () => {
 
       <div v-else class="player-card">
         <div class="player">
-          <template v-if="currentUrl && (playSrc || (canPlay(currentUrl) && isSupported(currentUrl)))">
-            <video controls controlsList="nodownload" playsinline preload="metadata" class="video">
-              <source :src="playSrc || currentUrl" :type="videoMime(playSrc || currentUrl)" />
-            </video>
-          </template>
-          <template v-else-if="findVideoUrl()">
-            <div class="fallback">
-              <i class="fa-solid fa-film" />
-              <span>Formato no compatible para reproducción directa.</span>
-              <a :href="findVideoUrl()" target="_blank" rel="noopener noreferrer" class="open"><i class="fa-solid fa-play" /> Abrir video</a>
-            </div>
+          <template v-if="currentUrl">
+            <div v-if="blobLoading" class="loading-player"><i class="fa-solid fa-spinner fa-spin" /> Cargando video...</div>
+            <template v-else-if="playSrc || (canPlay(currentUrl) && isSupported(currentUrl))">
+              <div class="player-box">
+                <video controls controlsList="nodownload" playsinline preload="metadata" class="video" @loadedmetadata="videoReady = true" @canplay="videoReady = true" @canplaythrough="videoReady = true">
+                  <source :src="playSrc || currentUrl" :type="videoMime(playSrc || currentUrl)" />
+                </video>
+                <div v-if="!videoReady" class="loading-overlay"><i class="fa-solid fa-spinner fa-spin" /> Preparando video...</div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="fallback">
+                <i class="fa-solid fa-film" />
+                <span>Formato no compatible para reproducción directa.</span>
+                <a :href="findVideoUrl()" target="_blank" rel="noopener noreferrer" class="open"><i class="fa-solid fa-play" /> Abrir video</a>
+              </div>
+            </template>
           </template>
           <template v-else>
             <div class="empty-video"><i class="fa-regular fa-circle-play" /> Esta clase no tiene video disponible.</div>
@@ -159,7 +167,10 @@ onMounted(async () => {
 .error { color: $alert-error; background: $alert-error-bg; border-color: rgba($alert-error, 0.3); }
 .player-card { background: $white; border: 1px solid #e6e6e6; border-radius: 16px; padding: 16px; display: grid; gap: 16px; }
 .player { background: #000; border-radius: 12px; overflow: hidden; }
+.player-box { position: relative; }
 .video { width: 100%; max-height: 460px; display: block; }
+.loading-player { display: inline-flex; align-items: center; gap: 10px; color: #fff; padding: 16px; }
+.loading-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(0,0,0,0.25); }
 .fallback { display: grid; gap: 8px; color: #fff; padding: 16px; }
 .fallback .open { color: $FUDMASTER-GREEN; text-decoration: none; }
 .empty-video { color: #fff; padding: 16px; }
