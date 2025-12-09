@@ -13,6 +13,7 @@
 <style lang="scss">
   .app-container  {
     background-color: $FUDMASTER-LIGHT;
+    font-family: $font-principal;
     min-height: 100vh;
     width: 100%;
     &-view {

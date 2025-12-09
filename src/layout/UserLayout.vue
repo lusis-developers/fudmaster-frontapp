@@ -16,7 +16,7 @@
 <style lang="scss" scoped>
 .layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   &-menu-wrapper {
     width: 100%;
     max-width: fit-content;

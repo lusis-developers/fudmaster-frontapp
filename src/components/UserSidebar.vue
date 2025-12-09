@@ -6,6 +6,9 @@ const menu = [
   { name: 'Cursos', link: '/settings' },
 ];
 
+function openCloseMenu() {
+  console.log('Menu toggled');
+}
 </script>
 
 <template>
@@ -15,21 +18,24 @@ const menu = [
         <a :href="item.link">{{ item.name }}</a>
       </li>
     </ul>
+    <button @click="openCloseMenu">
+      <i class="fa-solid fa-gear"></i>
+    </button>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .user {
   &-sidebar {
-    background-color: #f9f9f9;
-    border-right: 1px solid #e0e0e0;
+    background-color: $FUDMASTER-LIGHT;
     height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
+    border-right: 1px solid #e0e0e0;
+    width: 180px;
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   &-menu {
     list-style: none;
