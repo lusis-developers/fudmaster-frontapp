@@ -3,7 +3,6 @@ const emit = defineEmits(['toggleSidebar']);
 
 function handleMenuClick() {
   emit('toggleSidebar');
-  console.log('me emito');
 }
 </script>
 

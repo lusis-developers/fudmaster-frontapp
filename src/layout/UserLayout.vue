@@ -6,7 +6,6 @@ import UserHeader from '../components/UserHeader.vue';
 const menuIsOpen = ref(false);
 
 function openCloseMenu() {
-  console.log('toggling menu');
   menuIsOpen.value = !menuIsOpen.value;
 }
 </script>
