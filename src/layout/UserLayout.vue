@@ -1,9 +1,13 @@
 <script setup lang="ts">
   import UserSidebar from '../components/UserSidebar.vue';
+  import UserHeader from '../components/UserHeader.vue';
 </script>
 
 <template>
-  <div class="layout main-wrapper">
+  <div class="header">
+    <UserHeader />
+  </div>
+  <div class="layout">
     <div class="layout-menu-wrapper">
       <UserSidebar />
     </div>
@@ -14,6 +18,9 @@
 </template>
 
 <style lang="scss" scoped>
+.header {
+  width: 100%;
+}
 .layout {
   display: flex;
   height: 100vh;

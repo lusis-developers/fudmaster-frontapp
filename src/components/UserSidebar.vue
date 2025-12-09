@@ -2,25 +2,23 @@
 
 const menu = [
   { name: 'Perfil', link: '/profile' },
-  { name: 'Configuración', link: '/settings' },
   { name: 'Cursos', link: '/settings' },
+  { name: 'Configuración', link: '/settings' },
 ];
-
-function openCloseMenu() {
-  console.log('Menu toggled');
-}
 </script>
 
 <template>
   <div class="user-sidebar">
-    <ul class="user-menu">
-      <li v-for="item in menu" :key="item.name">
-        <a :href="item.link">{{ item.name }}</a>
-      </li>
-    </ul>
-    <button @click="openCloseMenu">
+    <div class="user-sidebar-wrapper">
+      <ul class="user-menu">
+        <li v-for="item in menu" :key="item.name">
+          <a :href="item.link">{{ item.name }}</a>
+        </li>
+      </ul>
+    </div>
+    <!-- <router-link to="/setting" class="setting-button">
       <i class="fa-solid fa-gear"></i>
-    </button>
+    </router-link> -->
   </div>
 </template>
 
@@ -35,13 +33,31 @@ function openCloseMenu() {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    .setting-button {
+    background: none;
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 12px;
+
+    &:hover {
+      color: $FUDMASTER-GREEN;
+    }
   }
+  }
+
   &-menu {
     list-style: none;
     padding: 0;
+    margin-top: 36px;
 
     li {
+      padding: 0 12px;
       margin-bottom: 15px;
+      margin: 24px 0;
 
       a {
         text-decoration: none;
