@@ -12,6 +12,7 @@ export interface CommentItem extends Record<string, unknown> {
   videoId?: number
   likes?: string[]
   createdAt?: string
+  repliesCount?: number
 }
 
 export interface ListCommentsResponse {
@@ -45,11 +46,15 @@ class CommentsService extends APIBase {
   }
 
   async create<T = { message: string; comment: CommentItem }>(body: CreateCommentBody, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-    return this.post<T>('comments', body, { 'Content-Type': 'application/json' }, config)
+    const res = await this.post<T>('comments', body, { 'Content-Type': 'application/json' }, config)
+    try { window.dispatchEvent(new Event('comments:created')); window.dispatchEvent(new Event('gamification:points-refresh')) } catch {}
+    return res
   }
 
   async reply<T = { message: string; reply: CommentItem }>(commentId: string, body: { userId: string; content: string }, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-    return this.post<T>(`comments/${commentId}/replies`, body, { 'Content-Type': 'application/json' }, config)
+    const res = await this.post<T>(`comments/${commentId}/replies`, body, { 'Content-Type': 'application/json' }, config)
+    try { window.dispatchEvent(new Event('comments:created')); window.dispatchEvent(new Event('gamification:points-refresh')) } catch {}
+    return res
   }
 
   async like<T = { message: string }>(commentId: string, body: { userId: string }, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
