@@ -47,6 +47,13 @@ async function pay() {
       customerEmail: email.value.trim(),
     })
     if (result.payWithPayPhone) {
+      try {
+        localStorage.setItem('pending_checkout', JSON.stringify({
+          name: name.value.trim(),
+          email: email.value.trim(),
+          clientTransactionId: result.clientTransactionId
+        }))
+      } catch {}
       PayphoneService.redirectToPayment(result.payWithPayPhone)
     } else {
       error.value = 'No se pudo obtener la URL de pago.'
