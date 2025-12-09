@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
           <i class="fa-solid fa-user"></i>
           Mi cuenta
         </div>
-        <button v-else-if="route.path !== '/login'" class="login-button" @click="navigateToLogin">
+        <button v-else-if="route.path !== '/login' && route.path !== '/checkout'" class="login-button" @click="navigateToLogin">
           <i class="fa-solid fa-right-to-bracket"></i>
           Iniciar sesión
         </button>
