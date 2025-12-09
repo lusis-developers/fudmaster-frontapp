@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import Hero from './components/Hero.vue';
 import UrgentBar from './components/UrgentBar.vue';
 </script>
 
 <template>
   <div class="wrapper">
     <UrgentBar />
+    <Hero />
   </div>
 </template>
 
