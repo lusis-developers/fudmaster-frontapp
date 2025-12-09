@@ -94,7 +94,7 @@ export const useCoursesStore = defineStore('courses', {
       this.error = ''
       try {
         const { data } = await coursesService.getLecture<any>(courseId, lectureId)
-        this.currentLecture = data?.lecture ?? data
+        this.currentLecture = (data as any)?.lecture?.lecture ?? (data as any)?.lecture ?? data
         return this.currentLecture
       } catch (e: any) {
         this.error = e?.message || 'Error al obtener lección'
