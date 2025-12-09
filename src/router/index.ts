@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
 // Layout
 import UserLayout from "../layout/UserLayout.vue";
@@ -6,6 +6,9 @@ import PublicLayout from "../layout/PublicLayout.vue";
 
 // Views
 import UserHome from "../views/User/UserHome.vue";
+
+// Landingpage
+import NicoleLanding from "../views/Landing/NicoleLanding.vue";
 import LoginView from "../views/Auth/Login.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -27,6 +30,13 @@ const routes: Array<RouteRecordRaw> = [
     ]
   },
   {
+    path: '/landing-page',
+    component: NicoleLanding,
+    meta: {
+      title: 'Cambia tu vida gastronómica con Nicole y su equipo'
+    }
+  },
+  {
     path: '/login',
     component: PublicLayout,
     meta: { title: 'Iniciar sesión' },
@@ -37,7 +47,7 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes
 })
 
