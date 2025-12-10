@@ -120,14 +120,14 @@ function goBack() { router.back() }
 </template>
 
 <style lang="scss" scoped>
-.course-detail { width: 100%; padding: 24px 16px; background: $white; }
+.course-detail { width: 100%; padding: 24px 16px; background: var(--bg); color: var(--text); }
 .container { max-width: 100%; margin: 0 auto; display: grid; gap: 16px; }
 .progress { display: grid; gap: 6px; }
-.progress-bar { height: 8px; background: $FUDMASTER-GREEN; width: 0%; transition: width 0.3s ease; border-radius: 999px; }
-.progress-meta { color: rgba($FUDMASTER-DARK, 0.6); font-size: 12px; }
+.progress-bar { height: 8px; background: var(--accent); width: 0%; transition: width 0.3s ease; border-radius: 999px; }
+.progress-meta { color: color-mix(in oklab, var(--text), transparent 40%); font-size: 12px; }
 
 .header { display: grid; gap: 8px; }
-.back { background: none; border: none; color: $FUDMASTER-GREEN; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.back { background: none; border: none; color: var(--accent); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
 
 .loading,
 .error,
@@ -135,9 +135,9 @@ function goBack() { router.back() }
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: rgba($FUDMASTER-DARK, 0.6);
-  background: $FUDMASTER-LIGHT;
-  border: 1px solid rgba($FUDMASTER-DARK, 0.08);
+  color: color-mix(in oklab, var(--text), transparent 40%);
+  background: color-mix(in oklab, var(--bg), var(--text) 6%);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px 14px;
 }
@@ -170,18 +170,18 @@ function goBack() { router.back() }
 }
 
 .title {
-  color: $FUDMASTER-DARK;
+  color: var(--text);
   margin: 0;
   font-size: 26px;
   padding: 24px 0;
 }
 
-.subtitle { color: rgba($FUDMASTER-DARK, 0.7); margin: 0; font-size: 15px; line-height: 1.6; }
-.author { display: inline-flex; align-items: center; gap: 8px; color: rgba($FUDMASTER-DARK, 0.6); font-size: 14px; }
-.author-name { color: $FUDMASTER-GREEN; }
+.subtitle { color: color-mix(in oklab, var(--text), transparent 40%); margin: 0; font-size: 15px; line-height: 1.6; }
+.author { display: inline-flex; align-items: center; gap: 8px; color: color-mix(in oklab, var(--text), transparent 60%); font-size: 14px; }
+.author-name { color: var(--accent); }
 .actions { margin-top: 8px; }
 .cta-start { background: $FUDMASTER-PINK; color: $white; border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-.cta-start:disabled { background: $FUDMASTER-LIGHT; color: rgba($FUDMASTER-DARK, 0.5); border: 1px solid rgba($FUDMASTER-DARK, 0.08); cursor: not-allowed; }
+.cta-start:disabled { background: color-mix(in oklab, var(--bg), var(--text) 6%); color: color-mix(in oklab, var(--text), transparent 50%); border: 1px solid var(--border); cursor: not-allowed; }
 .cta-start:hover { filter: brightness(0.95); }
 
 
