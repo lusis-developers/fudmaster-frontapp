@@ -135,6 +135,11 @@ const problems = [
         margin: 0;
       }
 
+      @media screen and (max-width: 320px) {
+        padding: 14px 16px;
+        font-size: 0.75rem;
+      }
+
       &:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6);

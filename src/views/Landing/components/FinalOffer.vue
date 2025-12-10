@@ -99,6 +99,7 @@ function goToCheckout() { router.push('/checkout') }
     align-items: flex-end;
     gap: 1rem;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
   }
   
   .old-price {

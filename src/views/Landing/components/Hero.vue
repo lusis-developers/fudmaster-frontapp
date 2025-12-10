@@ -40,7 +40,7 @@ function goToCheckout() { router.push('/checkout') }
 
           <div class="cta-wrapper">
             <button class="cta-button" @click="goToCheckout">
-              Desbloquea tus descuento
+              🔓 Desbloquea tu descuento 🗝️
             </button>
             <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 cupos</p>
           </div>
@@ -160,6 +160,11 @@ function goToCheckout() { router.push('/checkout') }
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
   white-space: nowrap;
+
+  @media screen and (max-width: 320px) {
+    padding: 14px 16px;
+    font-size: 0.75rem;
+  }
 
   &:hover {
     transform: translateY(-3px);

@@ -80,7 +80,7 @@ function goToCheckout() { router.push('/checkout') }
       </div>
 
       <div class="actions">
-        <button class="cta" type="button" @click="goToCheckout">Quiero aplicar Formula Stack</button>
+        <button class="cta" type="button" @click="goToCheckout">Necesito la Fórmula Stack 🤓</button>
       </div>
   
     </section>
