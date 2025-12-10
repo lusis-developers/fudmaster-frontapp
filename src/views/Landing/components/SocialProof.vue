@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function goToCheckout() { router.push('/checkout') }
   // Datos de las tarjetas de resultados (Case Studies)
   const results = [
     {
@@ -74,6 +77,10 @@
             <span class="check">✓</span> Resultado Verificado
           </div>
         </div>
+      </div>
+
+      <div class="actions">
+        <button class="cta" type="button" @click="goToCheckout">Quiero aplicar Food Stack</button>
       </div>
   
     </section>
@@ -244,6 +251,20 @@
         pointer-events: none;
       }
     }
+  }
+  .actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  .cta {
+    background: $accent;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-weight: 800;
+    cursor: pointer;
   }
   
   .card-header {

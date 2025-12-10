@@ -1,7 +1,7 @@
 <script setup lang="ts">  
-function goToCheckout() {
-  console.log('go to checkout clicked');
-}
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function goToCheckout() { router.push('/checkout') }
   </script>
   
   <template>

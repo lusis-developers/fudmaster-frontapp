@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router'
+  const router = useRouter()
+  function goToCheckout() { router.push('/checkout') }
   
   // CORRECCIÓN APLICADA: Usamos ref() para la reactividad
   const faqs = ref([
@@ -26,8 +29,9 @@
   ]);
   
   const toggleFaq = (index: number) => {
-    // CORRECCIÓN APLICADA: Accedemos con .value porque es una referencia reactiva
-    faqs.value[index].isOpen = !faqs.value[index].isOpen;
+    const item = faqs.value[index]
+    if (!item) return
+    item.isOpen = !item.isOpen
   };
   </script>
   
@@ -58,7 +62,8 @@
               <p class="role">Fundadores & Operadores Activos</p>
             </div>
           </div>
-        </div>
+        </div
+        >
   
         <div class="faq-wrapper">
           <h2 class="faq-title">Preguntas Frecuentes</h2>
@@ -80,6 +85,10 @@
                 <p>{{ item.answer }}</p>
               </div>
             </div>
+          </div>
+
+          <div class="actions">
+            <button class="cta" type="button" @click="goToCheckout">Comenzar ahora</button>
           </div>
         </div>
   
@@ -256,6 +265,21 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  .cta {
+    background: $accent;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-weight: 800;
+    cursor: pointer;
   }
   
   .faq-item {

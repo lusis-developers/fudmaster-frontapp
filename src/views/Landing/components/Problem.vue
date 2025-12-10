@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function goToCheckout() { router.push('/checkout') }
 const problems = [
   {
     icon: '❌',
@@ -36,6 +39,9 @@ const problems = [
         <p class="problem-description">
           {{ item.description }}
         </p>
+      </div>
+      <div class="actions">
+        <button class="cta" type="button" @click="goToCheckout">Resolverlo ahora</button>
       </div>
     </section>
   </div>
@@ -76,6 +82,20 @@ const problems = [
         font-size: 1.1rem;
         line-height: 1.4;
       }
+    }
+    .actions {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    .cta {
+      background: $FUDMASTER-GREEN;
+      color: $white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
     }
   }
 }

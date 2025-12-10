@@ -1,6 +1,8 @@
 
 <script setup lang="ts">
-  // No necesitas lógica adicional aquí
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function goToCheckout() { router.push('/checkout') }
 </script>
 
 <template>
@@ -24,7 +26,7 @@
           </iframe>
           </div>
 
-        <button class="cta-button">Acceso Limitado - ¡Actúa Ahora!</button>
+        <button class="cta-button" @click="goToCheckout">Acceso Limitado - ¡Actúa Ahora!</button>
         <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 lugares</p>
       </div>
     </div>

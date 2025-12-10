@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router'
+  const router = useRouter()
+  function goToCheckout() { router.push('/checkout') }
   
   // Estado del switch: false = Promedio, true = Food Stack
   const isOptimized = ref(false);
@@ -32,6 +35,10 @@
           <p class="subtitle">
             Desliza el interruptor para ver la diferencia real entre operar por intuición vs. instalar el sistema Food Stack.
           </p>
+        </div>
+
+        <div class="actions">
+          <button class="cta" type="button" @click="goToCheckout">Instalar Food Stack ahora</button>
         </div>
   
         <div class="dashboard-card" :class="{ 'optimized-mode': isOptimized }">
@@ -358,5 +365,20 @@
       color: #475569;
       font-size: 0.9rem;
     }
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  .cta {
+    background: $color-accent;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-weight: 800;
+    cursor: pointer;
   }
   </style>
