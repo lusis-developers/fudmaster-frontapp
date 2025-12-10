@@ -51,6 +51,10 @@ class UsersService extends APIBase {
   async getById<T = { message: string; user: Record<string, unknown> }>(userId: string | number, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.get<T>(`users/${userId}`, undefined, config)
   }
+
+  async existsByEmail<T = { message: string; exists: boolean; user?: Record<string, unknown> }>(email: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.get<T>('users/exists', undefined, { ...(config || {}), params: { email } })
+  }
 }
 
 const usersService = new UsersService()

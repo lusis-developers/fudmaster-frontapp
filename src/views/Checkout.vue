@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import PayphoneService from '@/services/payphone.service'
+import usersService from '@/services/users.service'
 import { useCheckoutStore } from '@/stores/checkout'
 
 const checkoutStore = useCheckoutStore()
@@ -44,10 +45,15 @@ async function pay() {
   loading.value = true
   error.value = ''
   try {
+    const { data: existsRes } = await usersService.existsByEmail<{ message: string; exists: boolean }>(email.value.trim())
+    if (existsRes?.exists) {
+      error.value = 'Ya existe una cuenta con ese correo. Por favor inicia sesión o usa otro correo.'
+      return
+    }
     const result = await PayphoneService.preparePayment({
       productId: 'FM-EXPERT-ANNUAL',
       productName: 'Plan Expert',
-      price: 199,
+      price: 297,
       customerName: name.value.trim(),
       customerEmail: email.value.trim(),
     })
@@ -111,7 +117,7 @@ async function pay() {
           <div class="pricing">
             <div class="row">
               <span>Total a pagar</span>
-              <span class="price">$ 199</span>
+              <span class="price">$ 297</span>
             </div>
             <div class="row small">
               <span class="strike">Precio normal $249</span>
