@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -8,129 +7,191 @@ function goToCheckout() { router.push('/checkout') }
 <template>
   <div class="vsl-hero">
     <div class="vsl-container">
-      <div class="vsl-content">
-        <h1 class="vsl-title">Transforma tu carrera gastronómica</h1>
-        <p class="vsl-subtitle">Descubre los secretos de éxito con Nicole y su equipo</p>
+      
+      <div class="vsl-split-layout">
         
-        <div class="vsl-video-wrapper">
-          <iframe
-            src="https://fast.wistia.net/embed/iframe/ecdxw6wr0v"
-            title="Video de presentación"
-            allow="autoplay; fullscreen"
-            allowfullscreen
-            class="wistia_embed"
-            name="wistia_embed"
-            msallowfullscreen
-            width="100%"
-            height="100%">
-          </iframe>
+        <div class="vsl-video-column">
+          <div class="video-frame">
+            <iframe
+              src="https://fast.wistia.net/embed/iframe/ecdxw6wr0v"
+              title="Video de presentación"
+              allow="autoplay; fullscreen"
+              allowfullscreen
+              class="wistia_embed"
+              name="wistia_embed"
+              msallowfullscreen
+              width="100%"
+              height="380px">
+            </iframe>
           </div>
+        </div>
 
-        <button class="cta-button" @click="goToCheckout">Acceso Limitado - ¡Actúa Ahora!</button>
-        <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 lugares</p>
+        <div class="vsl-content-column">
+          <h1 class="vsl-title">
+            ¡El regalo <br>
+            que necesitas <br>
+            para transformar <br>
+            tu vida!
+          </h1>
+          
+          <p class="vsl-description">
+            Descubre los secretos gastronómicos empresariales de Nicole y su equipo.
+          </p>
+
+          <div class="cta-wrapper">
+            <button class="cta-button" @click="goToCheckout">
+              Acceso Limitado - ¡Actúa Ahora!
+            </button>
+            <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 cupos</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+/* Asegúrate de que estas variables estén definidas en tu proyecto global
+   o descoméntalas aquí para probar */
+// $FUDMASTER-PRIMARY: #030b1c; /* Color oscuro de fondo aproximado */
+// $FUDMASTER-LIGHT: #ffffff;
+// $FUDMASTER-PINK: #e91e63;
+
 .vsl {
   &-hero {
-    background: $FUDMASTER-LIGHT;
-    min-height: 100vh;
+    background-color: $FUDMASTER-PRIMARY;
+    min-height: 100vh; /* Ocupa toda la pantalla */
     display: flex;
-    align-items: center;
+    align-items: center; /* Centra verticalmente todo el bloque */
     justify-content: center;
-    padding: 40px 20px;
+    padding: 32px 20px;
+    position: relative;
+    overflow: hidden;
   }
 
   &-container {
-    max-width: 900px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  &-split-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px; /* Espacio entre video y texto */
+  }
+
+  /* --- COLUMNA VIDEO --- */
+  &-video-column {
+    flex: 1.2; /* El video ocupa un poco más de espacio (60% aprox) */
     width: 100%;
   }
 
-  &-content {
-    text-align: center;
-    color: $FUDMASTER-DARK;
-  }
-
-  &-title {
-    font-size: 48px;
-    font-weight: 800;
-    margin-bottom: 20px;
-  }
-
-  &-subtitle {
-    font-size: 24px;
-    margin-bottom: 40px;
-    opacity: 0.95;
-  }
-
-  &-video-wrapper {
-    margin: 40px 0;
-    border-radius: 12px;
+  .video-frame {
+    position: relative;
+    padding-bottom: 56.25%; /* Aspect Ratio 16:9 */
+    height: 0;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     background: #000;
-    
-    /* Esta línea es clave para que se vea bien sin el script */
-    aspect-ratio: 16 / 9;
-    width: 100%;
 
     iframe {
       width: 100%;
       height: 100%;
       display: block;
       border: none;
+      height: 420px;  
     }
+  }
+
+  /* --- COLUMNA TEXTO --- */
+  &-content-column {
+    flex: 0.8; /* El texto ocupa un poco menos (40% aprox) */
+    color: $FUDMASTER-LIGHT;
+    text-align: right; /* Alineado a la derecha como en la referencia */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Fuerza los elementos a la derecha */
+  }
+
+  &-title {
+    font-size: 2.5rem; /* Tamaño grande */
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 25px;
+    color: $FUDMASTER-LIGHT;
+  }
+
+  &-description {
+    font-size: 1.25rem;
+    line-height: 1.5;
+    margin-bottom: 40px;
+    opacity: 0.9;
+    max-width: 400px; /* Evita que el texto sea muy ancho */
+  }
+
+  .cta-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Alinea botón y subtitulo a la derecha */
   }
 }
 
+/* --- BOTÓN --- */
 .cta-button {
-  background: $FUDMASTER-PINK;
+  background: $FUDMASTER-ORANGE;
   color: $FUDMASTER-LIGHT;
   border: none;
-  padding: 18px 50px;
-  font-size: 20px;
+  padding: 18px 40px;
+  font-size: 1.1rem;
   font-weight: 700;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  margin-bottom: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+  white-space: nowrap;
 
   &:hover {
-    background: #fdb913;
-    color: #1a1a1a;
-    transform: scale(1.05);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6);
+    // filter: brightness(1.1); // Opcional para brillo
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: translateY(0);
   }
 }
 
 .cta-subtitle {
-  font-size: 14px;
-  opacity: 0.9;
-  margin: 0;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  opacity: 0.7;
+  font-weight: 300;
 }
 
-@media (max-width: 768px) {
-  .vsl {
-    &-title {
-      font-size: 32px;
-    }
-
-    &-subtitle {
-      font-size: 18px;
-    }
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 960px) {
+  .vsl-split-layout {
+    flex-direction: column; /* Apila Video arriba, Texto abajo */
+    gap: 40px;
   }
 
-  .cta-button {
-    padding: 14px 40px;
-    font-size: 16px;
+  .vsl-content-column {
+    text-align: center; /* Centrar texto en móvil */
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .vsl-title {
+    font-size: 2.5rem;
+  }
+
+  .cta-wrapper {
+    align-items: center;
   }
 }
 </style>
