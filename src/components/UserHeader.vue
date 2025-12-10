@@ -134,10 +134,10 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
 <style lang="scss" scoped>
 .user {
   &-header {
-    background-color: $white;
-    color: $FUDMASTER-DARK;
+    background-color: var(--bg);
+    color: var(--text);
     padding: 16px;
-    border-bottom: 1px solid rgba($FUDMASTER-DARK, 0.08);
+    border-bottom: 1px solid var(--border);
 
     &-wrapper {
       width: 100%;
@@ -153,12 +153,12 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
         .menu-button {
           background: none;
           border: none;
-          color: $FUDMASTER-DARK;
+          color: var(--text);
           font-size: 24px;
           cursor: pointer;
 
           &:hover {
-            color: $FUDMASTER-GREEN;
+            color: var(--accent);
           }
         }
 
@@ -198,9 +198,9 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: $white;
-          color: $FUDMASTER-DARK;
-          border: 1px solid rgba($FUDMASTER-DARK, 0.08);
+          background: var(--bg);
+          color: var(--text);
+          border: 1px solid var(--border);
           border-radius: 999px;
           padding: 8px 12px;
           font-size: 14px;
@@ -211,7 +211,7 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: $FUDMASTER-GREEN;
+          background: var(--accent);
           color: $white;
           border-radius: 999px;
           padding: 4px 8px;
@@ -221,8 +221,8 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
 
         .points-chip.loading {
           background: transparent;
-          color: $FUDMASTER-DARK;
-          border: 1px dashed rgba($FUDMASTER-DARK, 0.12);
+          color: var(--text);
+          border: 1px dashed var(--border);
         }
 
         .logout-button {
