@@ -29,10 +29,7 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        component: UserHome,
-        meta: {
-          title: 'Aquí empieza tu éxito gastronómico'
-        } 
+        redirect: '/courses'
       },
       {
         path: 'courses',
