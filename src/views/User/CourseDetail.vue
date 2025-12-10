@@ -173,6 +173,7 @@ function goBack() { router.back() }
   color: $FUDMASTER-DARK;
   margin: 0;
   font-size: 26px;
+  padding: 24px 0;
 }
 
 .subtitle { color: rgba($FUDMASTER-DARK, 0.7); margin: 0; font-size: 15px; line-height: 1.6; }

@@ -131,6 +131,7 @@ onMounted(() => {
 .header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .title {
   color: $FUDMASTER-DARK;
+  padding: 24px 0;
   font-size: 24px;
   margin: 0;
   display: inline-flex;
