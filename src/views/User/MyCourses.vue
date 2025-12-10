@@ -120,7 +120,7 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.my-courses { width: 100%; padding: 24px 16px; background: $white; }
+.my-courses { width: 100%; padding: 24px 16px; background: var(--bg); color: var(--text); }
 
 .container {
   margin: 0 auto;
@@ -130,7 +130,7 @@ onMounted(() => {
 
 .header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .title {
-  color: $FUDMASTER-DARK;
+  color: var(--text);
   padding: 24px 0;
   font-size: 24px;
   margin: 0;
@@ -140,13 +140,13 @@ onMounted(() => {
 }
 
 .subtitle {
-  color: rgba($FUDMASTER-DARK, 0.6);
+  color: color-mix(in oklab, var(--text), transparent 40%);
   margin: 0;
 }
 
 .actions { display: flex; align-items: center; gap: 10px; }
-.search { background: rgba($FUDMASTER-DARK, 0.06); border: 1px solid rgba($FUDMASTER-DARK, 0.12); color: $FUDMASTER-DARK; border-radius: 10px; padding: 10px 12px; font-size: 14px; width: 220px; }
-.search::placeholder { color: rgba($FUDMASTER-DARK, 0.5); }
+.search { background: color-mix(in oklab, var(--text), transparent 94%); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 14px; width: 220px; }
+.search::placeholder { color: color-mix(in oklab, var(--text), transparent 50%); }
 
 .loading,
 .error,
@@ -154,9 +154,9 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: rgba($FUDMASTER-DARK, 0.6);
-  background: $FUDMASTER-LIGHT;
-  border: 1px solid rgba($FUDMASTER-DARK, 0.08);
+  color: color-mix(in oklab, var(--text), transparent 40%);
+  background: color-mix(in oklab, var(--bg), var(--text) 6%);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px 14px;
 }
@@ -186,8 +186,8 @@ onMounted(() => {
 }
 
 .card {
-  background: $white;
-  border: 1px solid rgba($FUDMASTER-DARK, 0.08);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
   display: grid;
@@ -209,21 +209,21 @@ onMounted(() => {
 }
 
 .name {
-  color: $FUDMASTER-DARK;
+  color: var(--text);
   margin: 0;
   font-size: 18px;
 }
 
 .desc {
-  color: rgba($FUDMASTER-DARK, 0.6);
+  color: color-mix(in oklab, var(--text), transparent 40%);
   margin: 0;
   font-size: 14px;
 }
 
-.read-more { background: none; border: none; color: $FUDMASTER-BLUE; font-weight: 600; cursor: pointer; padding: 0; margin-left: 6px; }
+.read-more { background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; padding: 0; margin-left: 6px; }
 
-.meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border-top: 1px solid rgba($FUDMASTER-DARK, 0.06); }
-.badge { background: $overlay-purple; color: $FUDMASTER-BLUE; border: 1px solid rgba($FUDMASTER-DARK, 0.06); border-radius: 999px; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
-.cta { background: $FUDMASTER-PINK; color: $white; border-radius: 999px; padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-.card:hover { border-color: $FUDMASTER-BLUE; transform: translateY(-1px); }
+.meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border-top: 1px solid var(--border); }
+.badge { background: color-mix(in oklab, var(--accent), transparent 88%); color: var(--accent); border: 1px solid var(--border); border-radius: 999px; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.cta { background: var(--accent); color: $white; border-radius: 999px; padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
 </style>
