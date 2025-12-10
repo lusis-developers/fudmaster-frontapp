@@ -287,7 +287,7 @@
       background: $FUDMASTER-GREEN;
       color: $FUDMASTER-LIGHT;
       border: none;
-      padding: 18px 40px;
+      padding: 18px 24px;
       font-size: 1.1rem;
       font-weight: 700;
       border-radius: 50px;

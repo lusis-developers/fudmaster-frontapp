@@ -105,7 +105,13 @@ function goToCheckout() { router.push('/checkout') }
       display: block;
       border: none;
       height: 420px;  
+      @media screen and (max-width: 300px) {
+        height: 280px;  
+        // iframe {
+        // }
+      }
     }
+
   }
 
   /* --- COLUMNA TEXTO --- */
