@@ -16,8 +16,9 @@ const clientTransactionId = ref('')
 const user = ref<{ name?: string; email?: string } | null>(null)
 const checkoutStore = useCheckoutStore()
 
-function goHome() {
-  router.push('/')
+function goLogin() {
+  const email = user.value?.email || ''
+  router.push({ path: '/login', query: { msg: 'Revisa tu correo para activar/ver tu cuenta.', email } })
 }
 
 function goCheckout() {
@@ -44,8 +45,6 @@ onMounted(async () => {
     const res = await PayphoneService.confirmPayment(id, ctId)
     status.value = res.transactionStatus
     if (status.value === 'Approved') {
-      const token = `payphone_${res.transactionId}_${Date.now()}`
-      localStorage.setItem('access_token', token)
       const resAny: any = res as any
       const refStr: string = String(resAny.reference || '')
       const parts = refStr.split(' - ').map(s => s.trim()).filter(Boolean)
@@ -144,8 +143,8 @@ onMounted(async () => {
           </div>
 
           <div class="actions">
-            <button v-if="status === 'Approved'" class="cta green" @click="goHome">
-              Entrar a mi cuenta
+            <button v-if="status === 'Approved'" class="cta green" @click="goLogin">
+              Ir al login
             </button>
             <button v-else class="cta blue" @click="goCheckout">
               Intentar nuevamente
