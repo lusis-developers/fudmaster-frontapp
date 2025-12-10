@@ -12,10 +12,8 @@ function coverOf(course: any) {
   return sanitizeUrl(course.image_url) || sanitizeUrl(course.coverUrl) || '/src/assets/fudmaster-color.png'
 }
 
-function normalize(text?: string) { return (text || '').toString().trim().toLowerCase() }
-const activeName = 'primeros pasos en meta ads'
 function isActive(course: any) {
-  return normalize(course?.name || course?.title) === activeName
+  return !!course?.is_published
 }
 
 function truncated(text: string, limit = 140) {
