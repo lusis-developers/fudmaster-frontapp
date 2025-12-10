@@ -67,6 +67,18 @@ async function logout() {
   isLoggedIn.value = false
 }
 
+function confirmLogout() {
+  window.dispatchEvent(new CustomEvent('app:confirm', {
+    detail: {
+      title: 'Cerrar sesión',
+      message: '¿Estás seguro que quieres cerrar sesión?',
+      confirmText: 'Sí, cerrar sesión',
+      cancelText: 'Cancelar',
+      onConfirm: async () => { await logout() }
+    }
+  }))
+}
+
 onMounted(() => {
   window.addEventListener('auth:token-expired', onTokenExpired as EventListener)
   fetchPoints()
@@ -91,20 +103,23 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="logo">
-          <img src="../assets/fudmaster-color.png" alt="fudmaster-logo">
+          <picture>
+            <source srcset="../assets/iso-verde.png" media="(max-width: 768px)">
+            <img src="../assets/fudmaster-color.png" alt="fudmaster-logo">
+          </picture>
         </div>
       </div>
       <div class="user-header-wrapper-right">
         <template v-if="isLoggedIn">
           <div class="user-pill" title="Sesión iniciada">
             <i class="fa-solid fa-user"></i>
-            Mi cuenta
+            <span class="account-text">Mi cuenta</span>
             <span v-if="pointsLoading" class="points-chip loading"><i class="fa-solid fa-spinner fa-spin"></i></span>
             <span v-else-if="points !== null" class="points-chip"><i class="fa-solid fa-trophy"></i> {{ points }}</span>
           </div>
-          <button class="logout-button" @click="logout">
+          <button class="logout-button" @click="confirmLogout">
             <i class="fa-solid fa-right-from-bracket"></i>
-            Cerrar sesión
+            <span class="logout-text">Cerrar sesión</span>
           </button>
         </template>
         <button v-else-if="route.path !== '/login' && route.path !== '/checkout'" class="login-button" @click="navigateToLogin">
@@ -117,110 +132,145 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
 </template>
 
 <style lang="scss" scoped>
-  .user {
-    &-header {
-      background-color: $white;
-      color: $FUDMASTER-DARK;
-      padding: 16px;
-      border-bottom: 1px solid rgba($FUDMASTER-DARK, 0.08);
+.user {
+  &-header {
+    background-color: $white;
+    color: $FUDMASTER-DARK;
+    padding: 16px;
+    border-bottom: 1px solid rgba($FUDMASTER-DARK, 0.08);
 
-      &-wrapper {
-        width: 100%;
+    &-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+
+      &-left {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
+        gap: 16px;
 
-        &-left {
-          display: flex;
-          align-items: center;
-          gap: 16px;
+        .menu-button {
+          background: none;
+          border: none;
+          color: $FUDMASTER-DARK;
+          font-size: 24px;
+          cursor: pointer;
 
-          .menu-button {
-            background: none;
-            border: none;
-            color: $FUDMASTER-DARK;
-            font-size: 24px;
-            cursor: pointer;
-
-            &:hover {
-              color: $FUDMASTER-GREEN;
-            }
-          }
-          
-          .logo {
-            width: 120px;
-            img { width: 100%; }
+          &:hover {
+            color: $FUDMASTER-GREEN;
           }
         }
-        &-right {
-          display: flex;
+
+        .logo {
+          width: 120px;
+
+          img {
+            width: 100%;
+          }
+        }
+      }
+
+      &-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .login-button {
+          background: $FUDMASTER-GREEN;
+          color: $white;
+          border: none;
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
           align-items: center;
-          gap: 12px;
+          gap: 8px;
 
-          .login-button {
-            background: $FUDMASTER-GREEN;
-            color: $white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-
-            &:hover { filter: brightness(0.95); }
+          &:hover {
+            filter: brightness(0.95);
           }
+        }
 
-.user-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: $white;
-  color: $FUDMASTER-DARK;
-  border: 1px solid rgba($FUDMASTER-DARK, 0.08);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 600;
-}
+        .user-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: $white;
+          color: $FUDMASTER-DARK;
+          border: 1px solid rgba($FUDMASTER-DARK, 0.08);
+          border-radius: 999px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: 600;
+        }
 
-          .points-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: $FUDMASTER-GREEN;
-            color: $white;
-            border-radius: 999px;
-            padding: 4px 8px;
-            font-size: 12px;
-            margin-left: 6px;
-          }
+        .points-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: $FUDMASTER-GREEN;
+          color: $white;
+          border-radius: 999px;
+          padding: 4px 8px;
+          font-size: 12px;
+          margin-left: 6px;
+        }
 
-          .points-chip.loading {
-            background: transparent;
-            color: $FUDMASTER-DARK;
-            border: 1px dashed rgba($FUDMASTER-DARK, 0.12);
-          }
+        .points-chip.loading {
+          background: transparent;
+          color: $FUDMASTER-DARK;
+          border: 1px dashed rgba($FUDMASTER-DARK, 0.12);
+        }
 
-          .logout-button {
-            background: $FUDMASTER-DARK;
-            color: $white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .logout-button {
+          background: $FUDMASTER-DARK;
+          color: $white;
+          border: none;
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
 
-            &:hover { filter: brightness(0.95); }
+          &:hover {
+            filter: brightness(0.95);
           }
         }
       }
     }
   }
+}
+
+@media (max-width: 1024px) {
+  .user-header-wrapper-left .menu-button {
+    display: none;
+  }
+
+  .user-header .logo {
+    width: 88px;
+  }
+
+  .user-header-wrapper-right .user-pill {
+    padding: 6px 10px;
+  }
+
+  .user-header-wrapper-right .user-pill .account-text {
+    display: none;
+  }
+
+  .user-header-wrapper-right .logout-button {
+    padding: 8px;
+    border-radius: 999px;
+  }
+
+  .user-header-wrapper-right .logout-button .logout-text {
+    display: none;
+  }
+}
 </style>
