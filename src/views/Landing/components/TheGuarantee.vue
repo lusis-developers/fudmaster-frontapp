@@ -43,12 +43,14 @@
           <div class="badge-wrapper">
             <div class="seal">
               <span>100%</span>
-              <small>REAL</small>
+              <small>HONESTO</small>
             </div>
           </div>
           
           <div class="content">
-            <h3>No somos Gurús. <span class="highlight">Somos Operadores.</span></h3>
+            <h3>No somos Gurús. <span class="highlight">
+              <br></br>
+              Somos Operadores.</span></h3>
             <p class="promise">
               Nuestra garantía es nuestra propia reputación y resultados.
             </p>
@@ -57,7 +59,7 @@
             </p>
             
             <div class="founder-signature">
-              <div class="signature">Mauro Salgan</div>
+              <div class="signature">Mauro Salgan -</div>
               <div class="signature">Luis Reyes</div>
               <p class="role">Fundadores & Operadores Activos</p>
             </div>
@@ -67,8 +69,7 @@
   
         <div class="faq-wrapper">
           <h2 class="faq-title">Preguntas Frecuentes</h2>
-          
-          <div class="faq-grid">
+                  <div class="faq-grid">
             <div 
               v-for="(item, index) in faqs" 
               :key="index" 
@@ -87,12 +88,17 @@
             </div>
           </div>
 
-          <div class="actions">
-            <button class="cta" type="button" @click="goToCheckout">Comenzar ahora</button>
+          <div class="cta-wrapper">
+            <button class="cta-button" @click="goToCheckout">
+              The Stack Fourmula a tan solo <span>$297 USD</span>
+            </button>
+            <!-- <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 cupos</p> -->
           </div>
+
         </div>
   
       </div>
+    <img src="../../../assets/iso-verde.png" alt="fudmaster logo" class="fudmaster-logo" />
     </section>
   </template>
   
@@ -100,16 +106,23 @@
   // Variables de diseño (Asegurando consistencia sin Tailwind)
   $bg-dark: #020617;
   $card-bg: #0f172a;
-  $accent: #facc15; // Amarillo Food Stack
+  $accent: $FUDMASTER-ORANGE; // Amarillo Food Stack
   $text-main: #ffffff;
   $text-muted: #94a3b8;
   $border: #334155;
   
   .guarantee-section {
     background-color: $bg-dark;
-    padding: 6rem 1rem;
+    padding: 3rem 1rem;
     color: $text-main;
     border-top: 1px solid $border;
+  }
+
+  .fudmaster-logo {
+    width: 80px;
+    height: auto;
+    display: block;
+    margin: 3rem auto;
   }
   
   .container {
@@ -156,7 +169,7 @@
     height: 140px;
     border-radius: 50%;
     // Degradado azul técnico para denotar seriedad
-    background: radial-gradient(circle at 30% 30%, #3b82f6, #1d4ed8);
+    background: radial-gradient(circle at 30% 30%, $FUDMASTER-GREEN, $FUDMASTER-GREEN);
     border: 4px solid #1e293b;
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     display: flex;
@@ -235,7 +248,7 @@
       color: white;
       opacity: 0.9;
       display: inline-block;
-      margin-right: 1.5rem;
+      margin-right: 0.5rem;
     }
   
     .role {
@@ -260,6 +273,46 @@
     color: white;
     font-weight: 800;
   }
+
+   .cta-wrapper {
+      display: flex;
+      width: fit-content;
+      margin: 0 auto;
+      flex-direction: column;
+      align-items: flex-center; /* Alinea botón y subtitulo a la derecha */
+      margin-top: 36px;
+    }
+    /* --- BOTÓN --- */
+    .cta-button {
+      background: $FUDMASTER-GREEN;
+      color: $FUDMASTER-LIGHT;
+      border: none;
+      padding: 18px 40px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+      white-space: nowrap;
+
+      span {
+        color: $FUDMASTER-DARK;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6);
+        // filter: brightness(1.1); // Opcional para brillo
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   
   .faq-grid {
     display: flex;
@@ -273,8 +326,8 @@
     margin-top: 2rem;
   }
   .cta {
-    background: $accent;
-    color: black;
+    background: $FUDMASTER-GREEN;
+    color: $FUDMASTER-LIGHT;
     border: none;
     border-radius: 12px;
     padding: 12px 18px;
@@ -295,7 +348,7 @@
     }
   
     &.active {
-      border-color: $accent;
+      border-color: $FUDMASTER-PURPLE;
       background-color: lighten($card-bg, 3%);
       
       .icon {
@@ -304,7 +357,7 @@
       }
       
       .faq-question {
-        color: $accent;
+        color: $FUDMASTER-LIGHT;
       }
     }
   }
