@@ -20,6 +20,68 @@ export const useCoursesStore = defineStore('courses', {
     } as Record<string, number>,
   }),
   actions: {
+    setCurrentLectureFromCourse(lectureId: string | number) {
+      const course = this.currentCourse
+      const sections = Array.isArray(course?.lecture_sections) ? course.lecture_sections : []
+      for (const s of sections) {
+        const lectures = Array.isArray(s?.lectures) ? s.lectures : []
+        const found = lectures.find((l: any) => String(l?.id) === String(lectureId))
+        if (found) { this.currentLecture = found; return found }
+      }
+      return null
+    },
+    nextLectureIdGlobal(): string | number | null {
+      const course = this.currentCourse
+      const current = this.currentLecture
+      if (!course || !current) return null
+      const sections = Array.isArray(course?.lecture_sections) ? course.lecture_sections.slice().sort((a: any, b: any) => Number(a?.position || 0) - Number(b?.position || 0)) : []
+      const list: any[] = []
+      for (const s of sections) {
+        const lectures = Array.isArray(s?.lectures) ? s.lectures.slice().sort((a: any, b: any) => Number(a?.position || 0) - Number(b?.position || 0)) : []
+        for (const l of lectures) list.push(l)
+      }
+      const idx = list.findIndex((l: any) => String(l?.id) === String(current?.id))
+      if (idx < 0) return null
+      const next = list[idx + 1]
+      return next?.id ?? null
+    },
+    nextLectureIdInSection(): string | number | null {
+      const course = this.currentCourse
+      const current = this.currentLecture
+      if (!course || !current) return null
+      const sectionId = current?.lecture_section_id
+      const section = (Array.isArray(course?.lecture_sections) ? course.lecture_sections : []).find((s: any) => String(s?.id) === String(sectionId))
+      if (!section) return null
+      const lectures = Array.isArray(section?.lectures) ? section.lectures.slice().sort((a: any, b: any) => Number(a?.position || 0) - Number(b?.position || 0)) : []
+      const idx = lectures.findIndex((l: any) => String(l?.id) === String(current?.id))
+      if (idx < 0) return null
+      const next = lectures[idx + 1]
+      return next?.id ?? null
+    },
+    async goToNextLecture(courseId: string | number, router: any, scope: 'global' | 'section' = 'global', currentLectureId?: string | number) {
+      console.log('[coursesStore] goToNextLecture', { courseId, scope, currentLectureId })
+      if (!this.currentCourse) {
+        try { await this.fetchById(courseId) } catch {}
+      }
+      if (!this.currentLecture && currentLectureId !== undefined) {
+        this.setCurrentLectureFromCourse(currentLectureId)
+      }
+      let nextId = scope === 'section' ? this.nextLectureIdInSection() : this.nextLectureIdGlobal()
+      console.log('[coursesStore] computed nextId', nextId)
+      if (!courseId || !nextId) {
+        console.log('[coursesStore] nextId not found, abort navigation')
+        return false
+      }
+      this.setCurrentLectureFromCourse(nextId)
+      try {
+        router.push(`/courses/${courseId}/lectures/${nextId}`)
+        console.log('[coursesStore] router.push done')
+      } catch (e) {
+        console.log('[coursesStore] router.push error', e)
+        return false
+      }
+      return true
+    },
     async fetchAll(params?: Record<string, unknown>) {
       this.loading = true
       this.error = ''
