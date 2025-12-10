@@ -3,8 +3,10 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import PayphoneService from '@/services/payphone.service'
 import usersService from '@/services/users.service'
 import { useCheckoutStore } from '@/stores/checkout'
+import { useRouter } from 'vue-router'
 
 const checkoutStore = useCheckoutStore()
+const router = useRouter()
 const name = ref('')
 const email = ref('')
 const loading = ref(false)
@@ -70,6 +72,10 @@ async function pay() {
     loading.value = false
   }
 }
+
+function goLogin() {
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -98,6 +104,11 @@ async function pay() {
           <div v-if="error" class="error">
             <i class="fa-solid fa-triangle-exclamation" />
             {{ error }}
+          </div>
+
+          <div class="login-hint">
+            <span>¿Ya tienes cuenta?</span>
+            <button type="button" class="login-link" @click="goLogin">Inicia sesión</button>
           </div>
 
           <button class="cta" type="submit" :disabled="!canPay">
@@ -232,6 +243,23 @@ async function pay() {
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 14px;
+}
+
+.login-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba($FUDMASTER-DARK, 0.7);
+}
+
+.login-link {
+  background: transparent;
+  color: $FUDMASTER-GREEN;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 700;
 }
 
 .cta {

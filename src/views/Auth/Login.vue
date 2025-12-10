@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import usersService, { type LoginBody, type LoginResponse } from '@/services/users.service'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
-const email = ref('')
+const email = ref(String(route.query.email || ''))
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
+const info = ref(String(route.query.msg || ''))
 
 function goToCheckout() {
   router.push('/checkout')
@@ -45,6 +47,7 @@ async function submit() {
   <div class="login-page">
     <div class="card">
       <h2 class="title"><i class="fa-solid fa-right-to-bracket" /> Iniciar sesión</h2>
+      <div v-if="info" class="info"><i class="fa-solid fa-circle-info" /> {{ info }}</div>
       <form class="form" @submit.prevent="submit">
         <label for="email" class="label">Correo electrónico</label>
         <div class="input">
@@ -73,7 +76,7 @@ async function submit() {
       </div>
     </div>
   </div>
-  </template>
+</template>
 
 <style lang="scss" scoped>
 .login-page { width: 100%; padding: 24px 16px; }
@@ -124,6 +127,18 @@ async function submit() {
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 14px;
+}
+.info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $FUDMASTER-BLUE;
+  background: rgba($FUDMASTER-BLUE, 0.12);
+  border: 1px solid rgba($FUDMASTER-BLUE, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  margin-bottom: 12px;
 }
 .submit {
   width: 100%;

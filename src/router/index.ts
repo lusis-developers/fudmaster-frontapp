@@ -16,6 +16,7 @@ import NicoleLanding from "../views/Landing/NicoleLanding.vue";
 import LoginView from "../views/Auth/Login.vue";
 import Checkout from "../views/Checkout.vue";
 import PayResponse from "../views/PayResponse.vue";
+import Careers from "../views/Careers.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -54,6 +55,12 @@ const routes: Array<RouteRecordRaw> = [
         path: 'courses/:id/lectures/:lectureId',
         component: LectureDetail,
         meta: { title: 'Clase', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'careers',
+        component: Careers,
+        meta: { title: 'Escuelas o Carreras', requiresAuth: true }
       }
     ]
   },

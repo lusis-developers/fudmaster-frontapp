@@ -10,6 +10,7 @@ const props = defineProps({
 
 const menu = [
   { name: 'Mis cursos', link: '/courses', icon: 'fa-solid fa-book' },
+  { name: 'Escuelas', link: '/careers', icon: 'fa-solid fa-graduation-cap' },
   { name: 'Todos los cursos', link: '/courses/all', icon: 'fa-solid fa-list' },
 ];
 
@@ -66,6 +67,7 @@ function isSelected(link: string) {
     &.active {
       width: 64px;
     }
+
   }
 
   &-menu {
