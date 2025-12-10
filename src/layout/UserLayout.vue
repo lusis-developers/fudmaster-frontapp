@@ -56,6 +56,8 @@ watch(() => route.fullPath, () => {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background: var(--bg);
+    color: var(--text);
     .header {
       width: 100%;
     }
@@ -64,7 +66,7 @@ watch(() => route.fullPath, () => {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba($FUDMASTER-DARK, 0.32);
+      background: color-mix(in oklab, var(--text), transparent 68%);
       z-index: 1000;
     }
     .overlay-panel {
@@ -73,8 +75,8 @@ watch(() => route.fullPath, () => {
       left: 0;
       height: 100%;
       max-width: 280px;
-      background: $white;
-      border-right: 1px solid rgba($FUDMASTER-DARK, 0.08);
+      background: var(--bg);
+      border-right: 1px solid var(--border);
       box-shadow: 0 8px 24px rgba($FUDMASTER-DARK, 0.2);
       display: flex;
       flex-direction: column;
@@ -82,7 +84,7 @@ watch(() => route.fullPath, () => {
     }
     .overlay-head {
       padding: 16px 12px;
-      border-bottom: 1px solid rgba($FUDMASTER-DARK, 0.08);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -110,7 +112,7 @@ watch(() => route.fullPath, () => {
         bottom: 16px;
         left: 16px;
         z-index: 1100;
-        background: $FUDMASTER-DARK;
+        background: var(--accent);
         color: $white;
         border: none;
         border-radius: 999px;
@@ -119,7 +121,7 @@ watch(() => route.fullPath, () => {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 6px 16px rgba($FUDMASTER-DARK, 0.2);
+        box-shadow: 0 6px 16px color-mix(in oklab, var(--text), transparent 80%);
         cursor: pointer;
       }
       .floating-menu-btn:active { filter: brightness(0.95); }
