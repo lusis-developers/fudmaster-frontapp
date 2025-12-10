@@ -3,7 +3,7 @@
 <template>
   <div class="urgent">
     <h2>
-      ¡Inscríbete ahora en nuestros cursos de verano y aprovecha del acceso de por vida!
+      ¡Inscríbete ahora en nuestra oferta de lanzamiento y aprovecha del acceso de por vida!
     </h2>
   </div>
 </template>
