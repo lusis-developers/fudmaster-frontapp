@@ -80,7 +80,7 @@ window.setInterval(() => {
   <div class="all-courses">
     <div class="container">
       <h2 class="title"><i class="fa-solid fa-list" /> Todos los cursos</h2>
-      <p class="subtitle">Explora todo nuestro catálogo disponible.</p>
+      <p class="subtitle">Explora y descubre todos nuestros cursos disponibles.</p>
 
       <div v-if="store.loading" class="loading">
         <i class="fa-solid fa-spinner fa-spin" /> Cargando cursos...
@@ -135,6 +135,8 @@ window.setInterval(() => {
 .all-courses {
   width: 100%;
   padding: 24px 16px;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .container {
@@ -144,7 +146,7 @@ window.setInterval(() => {
 }
 
 .title {
-  color: $FUDMASTER-DARK;
+  color: var(--text);
   font-size: 24px;
   margin: 0;
   display: inline-flex;
@@ -153,7 +155,7 @@ window.setInterval(() => {
 }
 
 .subtitle {
-  color: #777;
+  color: color-mix(in oklab, var(--text), transparent 40%);
   margin: 0;
 }
 
@@ -163,9 +165,9 @@ window.setInterval(() => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #555;
-  background: $FUDMASTER-LIGHT;
-  border: 1px solid #e6e6e6;
+  color: color-mix(in oklab, var(--text), transparent 40%);
+  background: color-mix(in oklab, var(--bg), var(--text) 6%);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px 14px;
 }
@@ -198,7 +200,7 @@ window.setInterval(() => {
   }
 }
 
-.card { background: $white; border: 1px solid #e6e6e6; border-radius: 16px; overflow: hidden; display: grid; text-decoration: none; }
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: grid; text-decoration: none; transition: border-color 0.2s ease, transform 0.2s ease; }
 .card.disabled { pointer-events: none; opacity: 0.7; }
 
 .cover img {
@@ -227,34 +229,35 @@ window.setInterval(() => {
 }
 
 .name {
-  color: $FUDMASTER-DARK;
+  color: var(--text);
   margin: 0;
   font-size: 18px;
 }
 
 .desc {
-  color: #777;
+  color: color-mix(in oklab, var(--text), transparent 40%);
   margin: 0;
   font-size: 14px;
 }
 
-.countdown { padding: 12px; border-top: 1px dashed rgba($FUDMASTER-DARK, 0.08); display: inline-flex; align-items: center; gap: 6px; font-family: monospace; font-weight: 700; color: $FUDMASTER-DARK; }
-.countdown .label { font-size: 12px; color: rgba($FUDMASTER-DARK, 0.6); margin-right: 4px; }
-.countdown .unit { background: rgba($FUDMASTER-GREEN, 0.1); padding: 4px 6px; border-radius: 6px; min-width: 36px; text-align: center; }
-.countdown .sep { color: rgba($FUDMASTER-DARK, 0.4); }
+.countdown { padding: 12px; border-top: 1px dashed var(--border); display: inline-flex; align-items: center; gap: 6px; font-family: monospace; font-weight: 700; color: var(--text); }
+.countdown .label { font-size: 12px; color: color-mix(in oklab, var(--text), transparent 60%); margin-right: 4px; }
+.countdown .unit { background: color-mix(in oklab, var(--accent), transparent 88%); color: var(--accent); padding: 4px 6px; border-radius: 6px; min-width: 36px; text-align: center; }
+.countdown .sep { color: color-mix(in oklab, var(--text), transparent 60%); }
 
 .meta {
   padding: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border);
   font-size: 13px;
-  color: #555;
+  color: color-mix(in oklab, var(--text), transparent 40%);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 .status { border-radius: 999px; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
-.status.published { background: rgba($FUDMASTER-GREEN, 0.12); border: 1px solid rgba($FUDMASTER-GREEN, 0.4); color: $FUDMASTER-GREEN; }
-.status.upcoming { background: $overlay-purple; color: $FUDMASTER-BLUE; border: 1px solid rgba($FUDMASTER-DARK, 0.06); }
-.cta { background: $FUDMASTER-PINK; color: $white; border-radius: 999px; padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-.cta.disabled { background: $FUDMASTER-LIGHT; color: rgba($FUDMASTER-DARK, 0.5); border: 1px solid rgba($FUDMASTER-DARK, 0.08); }
+.status.published { background: color-mix(in oklab, var(--accent), transparent 88%); border: 1px solid var(--border); color: var(--accent); }
+.status.upcoming { background: $overlay-purple; color: $FUDMASTER-BLUE; border: 1px solid var(--border); }
+.cta { background: var(--accent); color: $white; border-radius: 999px; padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.cta.disabled { background: color-mix(in oklab, var(--bg), var(--text) 6%); color: color-mix(in oklab, var(--text), transparent 50%); border: 1px solid var(--border); }
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
 </style>
