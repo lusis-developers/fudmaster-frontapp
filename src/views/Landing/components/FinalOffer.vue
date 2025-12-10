@@ -13,8 +13,8 @@ function goToCheckout() { router.push('/checkout') }
         </div>
   
         <div class="offer-content">
-          <h3 class="title">Miembro Fundador</h3>
-          <p class="subtitle">Acceso de por vida a todo el ecosistema Food Stack</p>
+          <h3 class="title">Be founder</h3>
+          <p class="subtitle">Acceso de por vida a todo a la escuela de Fudmaster</p>
   
           <div class="price-display">
             <span class="old-price">$990</span>
@@ -30,7 +30,7 @@ function goToCheckout() { router.push('/checkout') }
           </ul>
   
           <button class="buy-btn" @click="goToCheckout">
-            UNIRME AHORA 👉
+            Quiero este precio 👉
           </button>
   
           <div class="trust-badges">
@@ -43,8 +43,10 @@ function goToCheckout() { router.push('/checkout') }
   </template>
   
   <style lang="scss" scoped>
+  
+
   .offer-section {
-    padding: 5rem 1rem;
+    padding: 1rem 1rem 5rem 1rem;
     background-color: #020617; // Dark bg
     display: flex;
     justify-content: center;
@@ -52,7 +54,7 @@ function goToCheckout() { router.push('/checkout') }
   
   .offer-container {
     background-color: #0f172a;
-    border: 4px solid #facc15; // Borde dorado grueso
+    border: 4px solid $FUDMASTER-ORANGE; // Borde dorado grueso
     border-radius: 24px;
     padding: 3rem 2rem;
     max-width: 500px;
@@ -67,7 +69,7 @@ function goToCheckout() { router.push('/checkout') }
     top: -20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #facc15;
+    background-color: $FUDMASTER-ORANGE;
     color: black;
     font-weight: 800;
     padding: 0.8rem 2rem;
@@ -134,7 +136,7 @@ function goToCheckout() { router.push('/checkout') }
   
   .buy-btn {
     width: 100%;
-    background-color: #22c55e; // Verde venta
+    background-color: $FUDMASTER-GREEN; // Verde venta
     color: white;
     font-size: 1.5rem;
     font-weight: 900;
@@ -142,7 +144,7 @@ function goToCheckout() { router.push('/checkout') }
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    box-shadow: 0 10px 0 #15803d; // Efecto 3D
+    box-shadow: 0 10px 0 $FUDMASTER-GREEN; // Efecto 3D
     transition: transform 0.1s, box-shadow 0.1s;
     margin-bottom: 1.5rem;
   

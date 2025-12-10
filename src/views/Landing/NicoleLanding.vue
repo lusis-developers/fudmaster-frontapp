@@ -15,9 +15,9 @@ import WsButton from './components/WsButton.vue';
     <Hero />
     <Problem />
     <Solution />
+    <FinalOffer />
     <SocialProof />
     <TheGuarantee />
-    <FinalOffer />
     <WsButton />
   </div>
 </template>

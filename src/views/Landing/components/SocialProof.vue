@@ -10,7 +10,7 @@ function goToCheckout() { router.push('/checkout') }
       metric: '$23,000+',
       desc: 'Facturación mensual generada exclusivamente visitando punto de venta.',
       icon: '💬',
-      highlightColor: '#4ade80' // Green
+      highlightColor: '#fff' // Green
     },
     {
       brand: 'SWEET GLASE',
@@ -18,23 +18,23 @@ function goToCheckout() { router.push('/checkout') }
       metric: '$3,000',
       desc: 'Creación de producto estrella e identificación mercado para lograr product market fit.',
       icon: '⚡',
-      highlightColor: '#facc15' // Yellow
+      highlightColor: '#F96E46' // Yellow
     },
     {
-      brand: 'Nicole Pastry',
+      brand: 'Nicole Pastry Arts',
       category: 'Marca & Branding',
       metric: 'Top of Mind',
       desc: 'Posicionamiento como marca premium y alta fidelización de clientes recurrentes.',
       icon: '🧁',
-      highlightColor: '#f472b6' // Pink
+      highlightColor: '#7F5A83' 
     }
   ];
   
   // Aquí deberías importar las URLs reales de tus logos
   // Por ahora uso texto para el ejemplo visual
   const brands = [
-    'BAKANO', 'TAZ TAZ', 'SWEET GLASE', 'NICOLE PASTRY', 'SUCREE', 
-    'BAKANO', 'DELACREM', 'CASA MÍA', 'NICOLE PASTRY', 'SUCREE' // Duplicado para efecto infinito
+    'BAKANO', 'TAZ TAZ', 'SWEET GLASE', 'NICOLE PASTRY ARTS', 'SUCREE', 
+    'BAKANO', 'TAZ TAZ', 'SWEET GLASE', 'NICOLE PASTRY ARTS', 'SUCREE' // Duplicado para efecto infinito
   ];
   </script>
   
@@ -80,7 +80,7 @@ function goToCheckout() { router.push('/checkout') }
       </div>
 
       <div class="actions">
-        <button class="cta" type="button" @click="goToCheckout">Quiero aplicar Food Stack</button>
+        <button class="cta" type="button" @click="goToCheckout">Quiero aplicar Formula Stack</button>
       </div>
   
     </section>
@@ -93,7 +93,7 @@ function goToCheckout() { router.push('/checkout') }
   $border-color: rgba(255, 255, 255, 0.1);
   $text-main: #ffffff;
   $text-muted: #94a3b8;
-  $accent: #facc15;
+  $accent: #7F5A83;
   
   .social-proof-section {
     background-color: $bg-color;
@@ -259,7 +259,7 @@ function goToCheckout() { router.push('/checkout') }
   }
   .cta {
     background: $accent;
-    color: black;
+    color: white;
     border: none;
     border-radius: 12px;
     padding: 12px 18px;

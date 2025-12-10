@@ -37,8 +37,11 @@
           </p>
         </div>
 
-        <div class="actions">
-          <button class="cta" type="button" @click="goToCheckout">Instalar Food Stack ahora</button>
+        <div class="cta-wrapper">
+          <button class="cta-button" @click="goToCheckout">
+            Reserva tu cupo 💜
+          </button>
+          <!-- <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 cupos</p> -->
         </div>
   
         <div class="dashboard-card" :class="{ 'optimized-mode': isOptimized }">
@@ -167,11 +170,11 @@
       margin-bottom: 1rem;
   
       @media (min-width: 768px) {
-        font-size: 3rem;
+        font-size: 2.5rem;
       }
   
       .highlight {
-        color: $color-accent;
+        color: $FUDMASTER-ORANGE;
       }
     }
   
@@ -183,6 +186,43 @@
       line-height: 1.6;
     }
   }
+
+    .cta-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    /* --- BOTÓN --- */
+    .cta-button {
+      background: $FUDMASTER-GREEN ;
+      color: $FUDMASTER-LIGHT;
+      border: none;
+      padding: 18px 40px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+      white-space: nowrap;
+
+      span {
+        color: $FUDMASTER-DARK;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6);
+        // filter: brightness(1.1); // Opcional para brillo
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   
   // --- DASHBOARD CARD STYLES ---
   .dashboard-card {

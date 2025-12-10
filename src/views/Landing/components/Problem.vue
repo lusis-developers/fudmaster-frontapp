@@ -4,24 +4,29 @@ const router = useRouter()
 function goToCheckout() { router.push('/checkout') }
 const problems = [
   {
-    icon: '❌',
+    icon: '💣',
     description:
-      'El Robo Hormiga: Sabes que te roban, pero no sabes dónde ni cuánto.',
+      'Tienes robo hormiga: Sabes que te roban, pero no sabes dónde ni cuánto.',
   },
   {
-    icon: '❌',
+    icon: '☠️',
     description:
-      'Esclavitud Operativa: Si tú no abres el local, nada funciona bien. No has tenido vacaciones en 2 años.',
+      'Eres esclavo Operativo: Si tú no abres el local, nada funciona bien. No has tenido vacaciones en 2 años.',
   },
   {
-    icon: '❌',
+    icon: '🙈',
     description:
-      'Marketing Ciego: Pagas el botón "Promocionar" en Instagram pero no sabes si eso trajo clientes reales.',
+      'Usas Marketing Ciego: Pagas el botón "Promocionar" en Instagram pero no sabes si eso trajo clientes reales.',
   },
   {
-    icon: '❌',
+    icon: '💸',
     description:
-      'Ventas Estancadas: Tienes buen producto, pero el teléfono no suena lo suficiente.',
+      'Tienes Ventas Estancadas: Tienes buen producto, pero no tienes clientes o pedidos suficientes.',
+  },
+  {
+    icon: '😵‍💫',
+    description:
+      'Te sientes ahogado en deudas: Tienes buenas ventas, pero sientes que no es suficiente.',
   },
 ]
 </script>
@@ -30,7 +35,7 @@ const problems = [
   <div class="wrapper">
     <section class="problem-section">
       <h2 class="problem-title">
-        ¿Te suena familiar este escenario?
+        Esto es para ti si...
       </h2>
       <div v-for="(item, i) in problems" :key="i">
         <span>
@@ -40,8 +45,14 @@ const problems = [
           {{ item.description }}
         </p>
       </div>
-      <div class="actions">
+      <!-- <div class="actions">
         <button class="cta" type="button" @click="goToCheckout">Resolverlo ahora</button>
+      </div> -->
+      <div class="cta-wrapper">
+        <button class="cta-button" @click="goToCheckout">
+          🎁 Reclama tus <span>$693</span> de descuento aqui 🎁
+        </button>
+        <!-- <p class="cta-subtitle">Solo para los primeros 50 - Quedan 28 cupos</p> -->
       </div>
     </section>
   </div>
@@ -97,6 +108,44 @@ const problems = [
       font-weight: 700;
       cursor: pointer;
     }
+    .cta-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-center; /* Alinea botón y subtitulo a la derecha */
+      margin-top: 12px;
+    }
+    /* --- BOTÓN --- */
+    .cta-button {
+      background: $FUDMASTER-PURPLE;
+      color: $FUDMASTER-LIGHT;
+      border: none;
+      padding: 18px 24px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+      white-space: nowrap;
+
+      span {
+        color: $FUDMASTER-DARK;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6);
+        // filter: brightness(1.1); // Opcional para brillo
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
   }
 }
 </style>
