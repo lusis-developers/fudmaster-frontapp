@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useCareersStore } from '@/stores/careers'
+import { useCoursesStore } from '@/stores/courses'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
   menuIsOpen: {
@@ -17,13 +20,24 @@ const menu = [
 
 const route = useRoute()
 function isSelected(link: string) {
-  return route.path === link
+  return route.path === link || route.path.startsWith(link + '/')
 }
+
+const careersStore = useCareersStore()
+const coursesStore = useCoursesStore()
+const userStore = useUserStore()
+
+const careersCount = computed(() => (Array.isArray(careersStore.careers) ? careersStore.careers.length : 0))
+const enrolledCount = computed(() => (Array.isArray(coursesStore.enrolledCourses) ? coursesStore.enrolledCourses.length : 0))
 
 const isDark = ref(false)
 function applyTheme() { document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light') }
 function toggleTheme() { isDark.value = !isDark.value; localStorage.setItem('theme', isDark.value ? 'dark' : 'light'); applyTheme() }
-onMounted(() => { const t = localStorage.getItem('theme'); isDark.value = t === 'dark'; applyTheme() })
+onMounted(async () => {
+  const t = localStorage.getItem('theme'); isDark.value = t === 'dark'; applyTheme()
+  try { await careersStore.fetchAll() } catch {}
+  try { userStore.hydrate(); const uid = userStore.id || localStorage.getItem('user_id'); if (uid) await coursesStore.fetchEnrolled(String(uid)) } catch {}
+})
 </script>
 
 <template>
@@ -36,6 +50,8 @@ onMounted(() => { const t = localStorage.getItem('theme'); isDark.value = t === 
           :class="{ 'active': !menuIsOpen, 'selected': isSelected(item.link) }">
           <i :class="item.icon" class="icon" />
           <RouterLink :to="item.link" :class="{ 'active': menuIsOpen, 'selected': isSelected(item.link) }">{{ item.name }}</RouterLink>
+          <span v-if="item.link === '/careers' && careersCount > 0" class="menu-badge">{{ careersCount }}</span>
+          <span v-if="item.link === '/courses' && enrolledCount > 0" class="menu-badge">{{ enrolledCount }}</span>
         </li>
       </ul>
     </div>
@@ -122,6 +138,18 @@ onMounted(() => { const t = localStorage.getItem('theme'); isDark.value = t === 
           color: var(--accent);
           font-weight: 700;
         }
+      }
+
+      .menu-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent);
+        color: $white;
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 11px;
+        margin-left: auto;
       }
 
     }
