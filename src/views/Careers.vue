@@ -1,139 +1,130 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, computed } from 'vue'
+import { useCareersStore } from '@/stores/careers'
+import { useUserStore } from '@/stores/user'
+import { useCoursesStore } from '@/stores/courses'
 
-const router = useRouter()
+const store = useCareersStore()
+const userStore = useUserStore()
+const coursesStore = useCoursesStore()
 
-type School = { id: number; name: string; weeks: number; description: string }
-
-const schools = ref<School[]>([
-  { id: 1, name: 'Escuela de Gestión Gastronómica', weeks: 1, description: 'Optimiza operaciones, costos y rentabilidad de tu cocina.' },
-  { id: 2, name: 'Escuela de Meta Ads', weeks: 2, description: 'Campañas efectivas para atraer clientes a tu proyecto gastronómico.' },
-  { id: 3, name: 'Escuela de Marketing Digital', weeks: 3, description: 'Posiciona tu marca gastronómica y acelera tu crecimiento.' },
-  { id: 4, name: 'Escuela de Gestión de Equipo', weeks: 4, description: 'Lidera brigadas, mejora procesos y eleva la cultura de servicio.' },
-])
-
-const deadlines = ref<number[]>([])
-const tick = ref<number>(Date.now())
-let intervalId: number | undefined
-
-function pixelStyle(i: number) {
-  const hues = [120, 200, 20, 280]
-  const h = hues[i % hues.length]
-  return {
-    '--c1': `hsla(${h}, 60%, 60%, 0.18)`,
-    '--c2': `hsla(${h}, 40%, 40%, 0.14)`,
-    '--c3': `hsla(${h}, 30%, 30%, 0.10)`,
-  } as Record<string, string>
-}
-
-function endOfNextSunday(): Date {
-  const now = new Date()
-  const day = now.getDay()
-  const daysUntilSunday = (7 - day)
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday, 23, 59, 59)
-}
-
-function cycleDeadline(weeks: number): number {
-  const base = endOfNextSunday()
-  base.setDate(base.getDate() + 7 * (weeks - 1))
-  return base.getTime()
-}
-
-function initDeadlines() {
-  deadlines.value = schools.value.map(s => cycleDeadline(s.weeks))
-}
-
-function resetAllToOneWeek() {
-  const t = cycleDeadline(1)
-  deadlines.value = deadlines.value.map(() => t)
-}
-
-function goCheckout() { router.push('/checkout') }
-
-function fmt(n: number): string { return String(Math.max(0, n)).padStart(2, '0') }
-
-function countdown(ms: number) {
-  const now = tick.value
-  const diff = Math.max(0, ms - now)
-  const d = Math.floor(diff / (1000 * 60 * 60 * 24))
-  const h = Math.floor((diff / (1000 * 60 * 60)) % 24)
-  const m = Math.floor((diff / (1000 * 60)) % 60)
-  const s = Math.floor((diff / 1000) % 60)
-  return { d, h, m, s, finished: diff <= 0 }
-}
-
-onMounted(() => {
-  initDeadlines()
-  intervalId = window.setInterval(() => {
-    tick.value = Date.now()
-    if (deadlines.value.some(ms => ms - tick.value <= 0)) {
-      resetAllToOneWeek()
-    }
-  }, 1000)
+onMounted(async () => {
+  await store.fetchAll()
+  userStore.hydrate()
+  const uid = userStore.id || localStorage.getItem('user_id')
+  if (uid) await store.fetchUserCareers(String(uid))
 })
 
-onUnmounted(() => {
-  if (intervalId) window.clearInterval(intervalId)
+const careers = computed(() => store.careers)
+const loading = computed(() => store.loading)
+const error = computed(() => store.error)
+
+const userCareerIds = computed(() => {
+  const list = Array.isArray(store.userCareers) ? store.userCareers : []
+  return new Set(list.map((c: any) => String(c?.info?._id || c?.access?.careerId || '')))
 })
+
+const myCareers = computed(() => {
+  const list = Array.isArray(store.userCareers) ? store.userCareers : []
+  return list.map((c: any) => c?.info || c?.access).filter(Boolean)
+})
+
+function sanitizeUrl(url?: string) {
+  return (url || '').toString().replace(/`/g, '').trim()
+}
+
+function coverOf(career: any) {
+  return sanitizeUrl(career?.imageUrl) || '/src/assets/fudmaster-color.png'
+}
+
+function coursesCount(career: any) {
+  const ids = Array.isArray(career?.courseIds) ? career.courseIds : []
+  return ids.length
+}
+
+function isInMyCareers(career: any) {
+  return userCareerIds.value.has(String(career?._id))
+}
+
+async function addToMyCareers(career: any) {
+  const uid = userStore.id || localStorage.getItem('user_id')
+  if (!uid || !career?._id) return
+  const res = await store.assignToUser(String(career._id), String(uid), { autoEnroll: true, teachableUserId: userStore.teachableUserId || undefined })
+  if (res) {
+    await store.fetchUserCareers(String(uid))
+    await coursesStore.fetchEnrolled(String(uid))
+  }
+}
 </script>
 
 <template>
   <div class="careers-view">
     <div class="container">
       <div class="head">
-        <h2 class="title"><i class="fa-solid fa-graduation-cap" /> Escuelas exclusivas de gastronomía</h2>
-        <button class="cta" type="button" @click="goCheckout"><i class="fa-solid fa-bag-shopping" /> Unirme ahora</button>
+        <h2 class="title"><i class="fa-solid fa-graduation-cap" /> Escuelas o Carreras</h2>
       </div>
 
-      <div class="grid">
-        <div v-for="(s, i) in schools" :key="s.id" class="card">
-          <div class="cover pixelated" :style="pixelStyle(i)"></div>
-          <h3 class="name">{{ s.name }}</h3>
-          <p class="desc">{{ s.description }}</p>
-          <div class="weeks">Disponible en {{ s.weeks }} semana(s)</div>
-          <div class="label">Próximo lanzamiento en:</div>
-          <div class="countdown">
-            <span class="unit">{{ fmt(countdown(deadlines[i] ?? tick).d) }}d</span>
-            <span class="sep">:</span>
-            <span class="unit">{{ fmt(countdown(deadlines[i] ?? tick).h) }}h</span>
-            <span class="sep">:</span>
-            <span class="unit">{{ fmt(countdown(deadlines[i] ?? tick).m) }}m</span>
-            <span class="sep">:</span>
-            <span class="unit">{{ fmt(countdown(deadlines[i] ?? tick).s) }}s</span>
+      <div v-if="loading" class="hint">Cargando carreras…</div>
+      <div v-else-if="error" class="error">{{ error }}</div>
+
+      <template v-else>
+        <h3 class="subtitle">Mis carreras</h3>
+        <div class="grid">
+          <div v-if="myCareers.length === 0" class="empty">Aún no tienes carreras asignadas.</div>
+          <div v-for="c in myCareers" :key="c._id || c.careerId" class="card">
+            <RouterLink :to="`/careers/${c._id || c.careerId}`">
+              <img class="cover" :src="coverOf(c)" alt="cover" />
+              <h3 class="name">{{ c.name }}</h3>
+              <p class="desc">{{ c.description || 'Detalles próximamente.' }}</p>
+            </RouterLink>
+            <div class="meta">
+              <span class="badge">{{ coursesCount(c) }} curso(s)</span>
+              <span class="badge" :class="{ active: c.isActive }">{{ c.isActive ? 'Activa' : 'Inactiva' }}</span>
+              <button class="add-button" disabled>Agregada</button>
+            </div>
           </div>
-          <div class="ends">Termina el domingo 23:59</div>
         </div>
-      </div>
+
+        <h3 class="subtitle">Todas las carreras</h3>
+        <div class="grid">
+          <div v-for="c in careers" :key="c._id" class="card">
+            <RouterLink :to="`/careers/${c._id}`">
+              <img class="cover" :src="coverOf(c)" alt="cover" />
+              <h3 class="name">{{ c.name }}</h3>
+              <p class="desc">{{ c.description || 'Detalles próximamente.' }}</p>
+            </RouterLink>
+            <div class="meta">
+              <span class="badge">{{ coursesCount(c) }} curso(s)</span>
+              <span class="badge" :class="{ active: c.isActive }">{{ c.isActive ? 'Activa' : 'Inactiva' }}</span>
+              <button class="add-button" :disabled="isInMyCareers(c)" @click="addToMyCareers(c)">
+                {{ isInMyCareers(c) ? 'Agregada' : 'Agregar a mis carreras' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
-</template>
+  </template>
 
 <style lang="scss" scoped>
 .careers-view { width: 100%; padding: 24px 16px; background: var(--bg); color: var(--text); }
 .container { width: 100%; margin: 0 auto; display: grid; gap: 16px; }
 .head { display: flex; align-items: center; justify-content: space-between; }
 .title { display: inline-flex; align-items: center; gap: 10px; color: var(--text); margin: 0; font-size: 22px; }
-.cta { background: var(--accent); color: $white; border: none; border-radius: 10px; padding: 10px 12px; font-weight: 700; cursor: pointer; }
+.subtitle { color: var(--text); margin: 8px 0; font-size: 18px; }
+.hint { color: color-mix(in oklab, var(--text), transparent 40%); }
+.error { color: var(--accent); }
 .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
 @media (min-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 .card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06); display: grid; gap: 8px; }
-.cover { width: 100%; height: 120px; border-radius: 8px; }
-.pixelated {
-  --c1: rgba($FUDMASTER-GREEN, 0.15);
-  --c2: rgba($FUDMASTER-DARK, 0.12);
-  --c3: rgba($FUDMASTER-DARK, 0.06);
-  background-image:
-    repeating-linear-gradient(0deg, var(--c1) 0 12px, var(--c2) 12px 24px),
-    repeating-linear-gradient(90deg, var(--c3) 0 12px, transparent 12px 24px);
-  background-size: 24px 24px;
-}
+.cover { width: 100%; height: 130px; border-radius: 8px; object-fit: cover; }
 .name { color: var(--text); font-weight: 700; margin: 0; }
 .desc { color: color-mix(in oklab, var(--text), transparent 30%); margin: 0; font-size: 14px; }
-.weeks { color: color-mix(in oklab, var(--text), transparent 30%); font-size: 12px; }
-.label { color: color-mix(in oklab, var(--text), transparent 40%); font-size: 12px; }
-.countdown { display: inline-flex; align-items: center; gap: 6px; font-family: monospace; font-weight: 700; color: var(--text); }
-.unit { background: color-mix(in oklab, var(--accent), transparent 85%); padding: 6px 8px; border-radius: 6px; min-width: 42px; text-align: center; }
-.sep { color: color-mix(in oklab, var(--text), transparent 60%); }
-.ends { color: color-mix(in oklab, var(--text), transparent 40%); font-size: 12px; }
+.meta { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; }
+.badge { background: color-mix(in oklab, var(--accent), transparent 85%); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 12px; }
+.badge.active { background: color-mix(in oklab, var(--accent), transparent 70%); font-weight: 700; }
+.add-button { background: var(--accent); color: $white; border: none; border-radius: 8px; padding: 6px 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.add-button[disabled] { background: color-mix(in oklab, var(--accent), transparent 40%); cursor: default; }
+.empty { color: color-mix(in oklab, var(--text), transparent 40%); }
 </style>
