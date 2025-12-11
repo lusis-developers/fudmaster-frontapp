@@ -3,6 +3,7 @@ import { onMounted, computed, ref } from 'vue'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
 import CourseCard from '@/components/CourseCard.vue'
+import { makePlaceholders } from '@/mocks/courses.mock'
 
 const store = useCoursesStore()
 const userStore = useUserStore()
@@ -17,6 +18,8 @@ const userId = computed(() => {
 })
 
 const query = ref('')
+const modalOpen = ref(false)
+const modalTitle = ref('')
 
 const sourceCourses = computed(() => (store.enrolledCourses.length ? store.enrolledCourses : store.courses))
 
@@ -28,6 +31,38 @@ const filtered = computed(() => {
     return text.includes(q)
   })
 })
+
+const display = computed(() => {
+  const list = Array.isArray(filtered.value) ? filtered.value : []
+  const need = Math.max(0, 12 - list.length)
+  const placeholders = makePlaceholders(need)
+  return [...list, ...placeholders]
+})
+
+function isMock(c: any): boolean {
+  return String(c?._id || c?.id || '').startsWith('mock-')
+}
+
+function openModal(c: any) {
+  modalTitle.value = String(c?.name || 'Próximamente')
+  modalOpen.value = true
+}
+function closeModal() { modalOpen.value = false }
+
+function cycleDeadline(weeks: number): number {
+  const now = new Date()
+  const day = now.getDay()
+  const daysUntilSunday = (7 - day)
+  const base = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday, 23, 59, 59)
+  base.setDate(base.getDate() + 7 * (weeks - 1))
+  return base.getTime()
+}
+
+function countdownForIndex(i: number): number {
+  const pattern = [1, 2, 4] as const
+  const idx = (i % pattern.length) as 0 | 1 | 2
+  return cycleDeadline(pattern[idx])
+}
 
 onMounted(() => {
   if (userId.value) {
@@ -43,11 +78,14 @@ onMounted(() => {
     <div class="container">
       <div class="header">
         <h2 class="title"><i class="fa-solid fa-book" /> Mis cursos</h2>
-        <div class="actions">
-          <input v-model="query" type="search" placeholder="Buscar cursos" class="search" />
-        </div>
+      <div class="actions">
+        <input v-model="query" type="search" placeholder="Buscar cursos" class="search" />
+      </div>
       </div>
       <p class="subtitle">Explora y continúa tu aprendizaje. Usa el buscador para encontrar cursos.</p>
+      <div class="upcoming-notice">
+        <i class="fa-regular fa-bell" /> Pronto estarán disponibles más cursos durante este mes.
+      </div>
 
       <div v-if="store.loading" class="loading">
         <i class="fa-solid fa-spinner fa-spin" /> Cargando cursos...
@@ -64,13 +102,23 @@ onMounted(() => {
         </div>
         <div v-else class="cards">
           <CourseCard
-            v-for="c in filtered"
+            v-for="(c, i) in display"
             :key="c._id || c.id"
             :course="c"
-            :to="`/courses/${c.id}`"
+            :to="isMock(c) ? undefined : `/courses/${c.id}`"
+            :disabled="isMock(c)"
+            :countdown-to="isMock(c) ? countdownForIndex(i) : undefined"
             :show-published-badge="true"
             :show-classes-count="true"
+            @placeholder-click="openModal(c)"
           />
+        </div>
+        <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+          <div class="modal">
+            <h3 class="modal-title"><i class="fa-solid fa-hourglass-half" /> {{ modalTitle }}</h3>
+            <p class="modal-desc">Este curso estará disponible pronto. Gracias por tu interés.</p>
+            <button class="modal-btn" type="button" @click="closeModal">Entendido</button>
+          </div>
         </div>
       </div>
     </div>
@@ -102,6 +150,17 @@ onMounted(() => {
   margin: 0;
 }
 
+.upcoming-notice {
+  background: color-mix(in oklab, var(--accent), transparent 92%);
+  color: var(--accent);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .actions { display: flex; align-items: center; gap: 10px; }
 .search { background: color-mix(in oklab, var(--text), transparent 94%); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 14px; width: 220px; }
 .search::placeholder { color: color-mix(in oklab, var(--text), transparent 50%); }
@@ -130,6 +189,12 @@ onMounted(() => {
   gap: 16px;
   grid-template-columns: 1fr;
 }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: min(480px, 92vw); display: grid; gap: 12px; color: var(--text); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+.modal-title { margin: 0; font-size: 18px; display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
+.modal-desc { margin: 0; color: color-mix(in oklab, var(--text), transparent 40%); }
+.modal-btn { background: var(--accent); color: $white; border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; justify-self: end; }
 
 @media (min-width: 720px) {
   .cards {
