@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useCoursesStore } from '@/stores/courses'
+import { makePlaceholders } from '@/mocks/courses.mock'
 
 const store = useCoursesStore()
 
@@ -40,7 +41,11 @@ function cycleDeadline(weeks: number): number {
 }
 
 function initDeadlines(count: number) {
-  deadlines.value = Array.from({ length: count }, (_, i) => cycleDeadline((i % 4) + 1))
+  const pattern = [1, 2, 4] as const
+  deadlines.value = Array.from({ length: count }, (_, i) => {
+    const idx = (i % pattern.length) as 0 | 1 | 2
+    return cycleDeadline(pattern[idx])
+  })
 }
 
 function resetAllToOneWeek() {
@@ -62,7 +67,19 @@ onMounted(() => {
   store.fetchAll()
 })
 
-watch(() => store.courses, (list) => {
+const displayCourses = computed(() => {
+  const list = Array.isArray(store.courses) ? store.courses : []
+  const need = Math.max(0, 12 - list.length)
+  const placeholders = makePlaceholders(need)
+  return [...list, ...placeholders]
+})
+
+const modalOpen = ref(false)
+const modalTitle = ref('')
+function openUpcoming(c: any) { modalTitle.value = String(c?.name || c?.title || 'Próximamente'); modalOpen.value = true }
+function closeModal() { modalOpen.value = false }
+
+watch(displayCourses, (list) => {
   initDeadlines(Array.isArray(list) ? list.length : 0)
 }, { immediate: true })
 
@@ -79,6 +96,9 @@ window.setInterval(() => {
     <div class="container">
       <h2 class="title"><i class="fa-solid fa-list" /> Todos los cursos</h2>
       <p class="subtitle">Explora y descubre todos nuestros cursos disponibles.</p>
+      <div class="upcoming-notice">
+        <i class="fa-regular fa-bell" /> Pronto estarán disponibles más cursos durante este mes.
+      </div>
 
       <div v-if="store.loading" class="loading">
         <i class="fa-solid fa-spinner fa-spin" /> Cargando cursos...
@@ -94,11 +114,14 @@ window.setInterval(() => {
           <span>No hay cursos disponibles por ahora.</span>
         </div>
         <div v-else class="cards">
-          <RouterLink v-for="(c, i) in store.courses" :key="c._id || c.id" class="card" :to="`/courses/${c.id}`" :class="{ disabled: !isActive(c) }">
+          <RouterLink v-for="(c, i) in displayCourses" :key="c._id || c.id" class="card" :to="`/courses/${c.id}`" :class="{ disabled: !isActive(c) }" @click.prevent="!isActive(c) && openUpcoming(c)">
             <div class="cover" v-if="isActive(c)">
               <img :src="coverOf(c)" alt="cover" />
             </div>
-            <div v-else class="cover pixelated" :style="pixelStyle(i)"></div>
+            <div v-else>
+              <img v-if="coverOf(c)" :src="coverOf(c)" alt="cover" class="blur-cover" />
+              <div v-else class="cover pixelated" :style="pixelStyle(i)"></div>
+            </div>
             <div class="info">
               <h3 class="name">{{ c.name || c.title || 'Curso sin título' }}</h3>
               <p class="desc">
@@ -123,6 +146,13 @@ window.setInterval(() => {
               <span class="unit">{{ String(Math.floor((((deadlines[i] ?? tick) - tick) / 1000) % 60)).padStart(2, '0') }}s</span>
             </div>
           </RouterLink>
+        </div>
+        <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+          <div class="modal">
+            <h3 class="modal-title"><i class="fa-solid fa-hourglass-half" /> {{ modalTitle }}</h3>
+            <p class="modal-desc">Este curso estará disponible pronto. Gracias por tu interés.</p>
+            <button class="modal-btn" type="button" @click="closeModal">Entendido</button>
+          </div>
         </div>
       </div>
     </div>
@@ -155,6 +185,17 @@ window.setInterval(() => {
 .subtitle {
   color: color-mix(in oklab, var(--text), transparent 40%);
   margin: 0;
+}
+
+.upcoming-notice {
+  background: color-mix(in oklab, var(--accent), transparent 92%);
+  color: var(--accent);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .loading,
@@ -199,12 +240,20 @@ window.setInterval(() => {
 }
 
 .card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: grid; text-decoration: none; transition: border-color 0.2s ease, transform 0.2s ease; }
-.card.disabled { pointer-events: none; opacity: 0.7; }
+.card.disabled { opacity: 0.7; }
 
 .cover img {
   width: 100%;
   height: 160px;
   object-fit: cover;
+  display: block;
+}
+
+.blur-cover {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  filter: blur(6px);
   display: block;
 }
 
@@ -258,4 +307,10 @@ window.setInterval(() => {
 .cta { background: var(--accent); color: $white; border-radius: 999px; padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
 .cta.disabled { background: color-mix(in oklab, var(--bg), var(--text) 6%); color: color-mix(in oklab, var(--text), transparent 50%); border: 1px solid var(--border); }
 .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: min(480px, 92vw); display: grid; gap: 12px; color: var(--text); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+.modal-title { margin: 0; font-size: 18px; display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
+.modal-desc { margin: 0; color: color-mix(in oklab, var(--text), transparent 40%); }
+.modal-btn { background: var(--accent); color: $white; border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; justify-self: end; }
 </style>
