@@ -53,13 +53,15 @@ watch(() => route.fullPath, () => {
 
 <style lang="scss" scoped>
   .wrapper {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     background: var(--bg);
     color: var(--text);
     .header {
       width: 100%;
+      flex: 0 0 auto;
     }
     .floating-menu-btn { display: none; }
     .overlay {
@@ -92,16 +94,21 @@ watch(() => route.fullPath, () => {
     .overlay-logo { width: 36px; height: 36px; object-fit: contain; }
     }
     .layout {
-      flex: 1;
+      flex: 1 1 auto;
       display: flex;
+      overflow: hidden;
       &-menu-wrapper {
         width: 100%;
         max-width: fit-content;
         min-width: 24px;
+        overflow: hidden;
+        flex: 0 0 auto;
       }
       &-view-wrapper {
         width: 100%;
-        flex: 1;
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
     }
 
