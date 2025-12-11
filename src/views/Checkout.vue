@@ -92,8 +92,8 @@ function goLogin() {
         <div class="brand">
           <img src="/src/assets/fudmaster-color.png" alt="fudmaster-logo" />
         </div>
-        <h2 class="title">Escribe tu nombre y correo electrónico</h2>
-        <p class="subtitle">Tu pago quedará asociado a este correo.</p>
+        <h2 class="title">Asegura tu acceso anual por $297</h2>
+        <p class="subtitle">Completa tus datos para activar tu cuenta y recibir tu comprobante.</p>
 
         <form class="form" @submit.prevent="pay">
           <label for="name" class="label">Nombre completo</label>
@@ -129,8 +129,8 @@ function goLogin() {
 
       <div class="right">
         <div class="card">
-          <h3 class="plan">Plan Expert</h3>
-          <p class="info">Pago anual con renovación automática cada año</p>
+          <h3 class="plan">Plan Expert: Acceso Total 12 meses</h3>
+          <p class="info">Pago único anual. Renovación automática cada año.</p>
 
           <div class="pricing">
             <div class="row">
@@ -138,11 +138,11 @@ function goLogin() {
               <span class="price">$ 297</span>
             </div>
             <div class="row small">
-              <span class="strike">Precio normal $249</span>
-              <span class="save">Ahorras $50</span>
+              <span class="strike">Precio regular $349</span>
+              <span class="save">Ahorras $52</span>
             </div>
             <div class="row small">
-              <span>Precio mensual $ 17</span>
+              <span>Equivale a ~ $ 25 / mes</span>
             </div>
           </div>
 
@@ -151,12 +151,12 @@ function goLogin() {
           </div>
 
           <div class="benefits">
-            <div class="title">Lo que obtienes con el plan</div>
+            <div class="title">Todo lo que obtienes</div>
             <ul>
-              <li><i class="fa-solid fa-check" /> Eventos exclusivos como la Platzi Conf</li>
-              <li><i class="fa-solid fa-check" /> Más de 1900 cursos y 17 escuelas</li>
-              <li><i class="fa-solid fa-check" /> Certificados digitales</li>
-              <li><i class="fa-solid fa-check" /> English Academy...</li>
+              <li><i class="fa-solid fa-check" /> Acceso a todas las escuelas y cursos</li>
+              <li><i class="fa-solid fa-check" /> Certificados digitales verificables</li>
+              <li><i class="fa-solid fa-check" /> Actualizaciones y nuevos cursos todo el año</li>
+              <li><i class="fa-solid fa-check" /> Eventos y sesiones exclusivas para miembros</li>
             </ul>
           </div>
         </div>
@@ -307,7 +307,7 @@ function goLogin() {
 }
 
 .info {
-  color: #777;
+  color: rgba($FUDMASTER-DARK, 0.6);
   font-size: 14px;
   margin: 0;
 }
@@ -325,7 +325,7 @@ function goLogin() {
 
 .row.small {
   font-size: 14px;
-  color: #777;
+  color: rgba($FUDMASTER-DARK, 0.6);
 }
 
 .price {
@@ -334,7 +334,7 @@ function goLogin() {
 
 .strike {
   text-decoration: line-through;
-  color: #777;
+  color: rgba($FUDMASTER-DARK, 0.5);
 }
 
 .save {
@@ -367,6 +367,6 @@ function goLogin() {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #333;
+  color: rgba($FUDMASTER-DARK, 0.8);
 }
 </style>
