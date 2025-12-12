@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useCareersStore } from '@/stores/careers'
 import { useUserStore } from '@/stores/user'
 import { useCoursesStore } from '@/stores/courses'
+import { makeCareerPlaceholders } from '@/mocks/careers.mock'
 
 const store = useCareersStore()
 const userStore = useUserStore()
@@ -19,9 +21,17 @@ const careers = computed(() => store.careers)
 const loading = computed(() => store.loading)
 const error = computed(() => store.error)
 
+const mockCareers = computed(() => makeCareerPlaceholders(4))
+const allCareers = computed(() => {
+  const list = Array.isArray(careers.value) ? careers.value : []
+  return [...list, ...mockCareers.value]
+})
+
 const userCareerIds = computed(() => {
   const list = Array.isArray(store.userCareers) ? store.userCareers : []
-  return new Set(list.map((c: any) => String(c?.info?._id || c?.access?.careerId || '')))
+  const base = list.map((c: any) => String(c?.info?._id || c?.access?.careerId || ''))
+  const mocks = mockCareers.value.map((c) => String(c._id))
+  return new Set([...base, ...mocks])
 })
 
 const myCareers = computed(() => {
@@ -35,6 +45,10 @@ function sanitizeUrl(url?: string) {
 
 function coverOf(career: any) {
   return sanitizeUrl(career?.imageUrl) || '/src/assets/fudmaster-color.png'
+}
+
+function isMockCareer(career: any) {
+  return String(career?._id || '').startsWith('mock-')
 }
 
 function coursesCount(career: any) {
@@ -87,12 +101,12 @@ async function addToMyCareers(career: any) {
 
         <h3 class="subtitle">Todas las carreras</h3>
         <div class="grid">
-          <div v-for="c in careers" :key="c._id" class="card">
-            <RouterLink :to="`/careers/${c._id}`">
-              <img class="cover" :src="coverOf(c)" alt="cover" />
+          <div v-for="c in allCareers" :key="c._id" class="card">
+            <component :is="isMockCareer(c) ? 'div' : RouterLink" :to="isMockCareer(c) ? undefined : `/careers/${c._id}`">
+              <img class="cover" :class="{ blur: isMockCareer(c) }" :src="coverOf(c)" alt="cover" />
               <h3 class="name">{{ c.name }}</h3>
               <p class="desc">{{ c.description || 'Detalles próximamente.' }}</p>
-            </RouterLink>
+            </component>
             <div class="meta">
               <span class="badge">{{ coursesCount(c) }} curso(s)</span>
               <span class="badge" :class="{ active: c.isActive }">{{ c.isActive ? 'Activa' : 'Inactiva' }}</span>
@@ -119,6 +133,7 @@ async function addToMyCareers(career: any) {
 @media (min-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 .card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06); display: grid; gap: 8px; }
 .cover { width: 100%; height: 130px; border-radius: 8px; object-fit: cover; }
+.cover.blur { filter: blur(6px); }
 .name { color: var(--text); font-weight: 700; margin: 0; }
 .desc { color: color-mix(in oklab, var(--text), transparent 30%); margin: 0; font-size: 14px; }
 .meta { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; }
