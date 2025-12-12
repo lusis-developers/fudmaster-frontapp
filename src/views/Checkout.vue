@@ -14,9 +14,11 @@ const email = ref('')
 const loading = ref(false)
 const error = ref('')
 
+// Timer logic
 const expiresAt = ref<number>(Date.now() + 24 * 60 * 60 * 1000)
 const remaining = ref<string>('')
 
+// Exit Intent logic
 const exitOpen = ref(false)
 const allowLeave = ref(false)
 let popHandler: ((ev: PopStateEvent) => void) | null = null
@@ -27,7 +29,8 @@ function updateTimer() {
   const h = Math.floor(clamped / (1000 * 60 * 60))
   const m = Math.floor((clamped % (1000 * 60 * 60)) / (1000 * 60))
   const s = Math.floor((clamped % (1000 * 60)) / 1000)
-  remaining.value = `${h}h ${m}m ${s}s`
+  // Formato más limpio estilo reloj digital
+  remaining.value = `${h}h : ${m}m : ${s}s`
 }
 
 onMounted(() => {
@@ -37,9 +40,10 @@ onMounted(() => {
   checkoutStore.hydrate()
   if (checkoutStore.name) name.value = checkoutStore.name
   if (checkoutStore.email) email.value = checkoutStore.email
-  track('ViewContent', { content_name: 'Checkout' })
-  sendEvent('ViewContent', { content_name: 'Checkout' })
+  track('ViewContent', { content_name: 'Checkout Lifetime' })
+  sendEvent('ViewContent', { content_name: 'Checkout Lifetime' })
 
+  // Exit Intent setup
   try {
     history.pushState({ checkoutGuard: true }, '', location.href)
     popHandler = () => {
@@ -69,18 +73,20 @@ async function pay() {
   try {
     const { data: existsRes } = await usersService.existsByEmail<{ message: string; exists: boolean }>(email.value.trim())
     if (existsRes?.exists) {
-      error.value = 'Ya existe una cuenta con ese correo. Por favor inicia sesión o usa otro correo.'
+      error.value = 'Ya existe una cuenta con ese correo. Inicia sesión para mantener tu historial.'
       return
     }
     track('InitiateCheckout', { value: 297, currency: 'USD' })
     sendEvent('InitiateCheckout', { value: 297, currency: 'USD' })
+    
     const result = await PayphoneService.preparePayment({
-      productId: 'FM-EXPERT-ANNUAL',
-      productName: 'Plan Expert',
+      productId: 'FM-FOUNDER-LIFETIME', // Actualizado ID producto
+      productName: 'Plan Founder Lifetime',
       price: 297,
       customerName: name.value.trim(),
       customerEmail: email.value.trim(),
     })
+    
     if (result.payWithPayPhone) {
       checkoutStore.setFromForm(name.value, email.value)
       checkoutStore.setClientTransactionId(result.clientTransactionId)
@@ -88,7 +94,7 @@ async function pay() {
       sendEvent('AddPaymentInfo', { value: 297, currency: 'USD' })
       PayphoneService.redirectToPayment(result.payWithPayPhone)
     } else {
-      error.value = 'No se pudo obtener la URL de pago.'
+      error.value = 'Error de conexión con la pasarela.'
     }
   } catch (e: any) {
     error.value = e?.message || 'Error al preparar el pago.'
@@ -97,10 +103,7 @@ async function pay() {
   }
 }
 
-function goLogin() {
-  router.push('/login')
-}
-
+function goLogin() { router.push('/login') }
 function stayOnCheckout() { exitOpen.value = false }
 function leaveCheckout() {
   exitOpen.value = false
@@ -110,86 +113,137 @@ function leaveCheckout() {
 </script>
 
 <template>
-  <div class="checkout">
+  <div class="checkout-wrapper">
     <div class="container">
+      
       <div class="left">
-        <div class="brand">
-          <img src="/src/assets/fudmaster-color.png" alt="fudmaster-logo" />
+        <div class="header-secure">
+          <div class="brand">
+            <img src="/src/assets/fudmaster-color.png" alt="fudmaster-logo" />
+          </div>
+          <div class="secure-badge">
+            <i class="fa-solid fa-lock" /> Checkout Seguro SSL
+          </div>
         </div>
-        <h2 class="title">Asegura tu acceso anual por $297</h2>
-        <p class="subtitle">Completa tus datos para activar tu cuenta y recibir tu comprobante.</p>
+
+        <h1 class="main-title">Únete como Founder: <span class="highlight">Acceso de por vida</span></h1>
+        <p class="subtitle">Estás a un paso de transformar tu negocio gastronómico para siempre.</p>
 
         <form class="form" @submit.prevent="pay">
-          <label for="name" class="label">Nombre completo</label>
-          <div class="input">
-            <i class="fa-solid fa-user" />
-            <input id="name" type="text" v-model.trim="name" placeholder="Tu nombre" />
+          <div class="form-group">
+            <label for="name">Nombre completo</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user icon" />
+              <input id="name" type="text" v-model.trim="name" placeholder="Ej. Mauro Salgan" />
+            </div>
           </div>
 
-          <label for="email" class="label">Correo electrónico</label>
-          <div class="input">
-            <i class="fa-regular fa-envelope" />
-            <input id="email" type="email" v-model.trim="email" placeholder="tu@correo.com" autocomplete="email" />
+          <div class="form-group">
+            <label for="email">Correo electrónico</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-envelope icon" />
+              <input id="email" type="email" v-model.trim="email" placeholder="tu@mejorcorreo.com" autocomplete="email" />
+            </div>
           </div>
 
-          <div v-if="error" class="error">
-            <i class="fa-solid fa-triangle-exclamation" />
-            {{ error }}
+          <div v-if="error" class="error-box">
+            <i class="fa-solid fa-circle-exclamation" />
+            <span>{{ error }}</span>
           </div>
 
-          <div class="login-hint">
-            <span>¿Ya tienes cuenta?</span>
-            <button type="button" class="login-link" @click="goLogin">Inicia sesión</button>
+          <div class="login-row">
+            <span>¿Ya eres alumno?</span>
+            <button type="button" class="link-btn" @click="goLogin">Acceder aquí</button>
           </div>
 
-          <button class="cta" type="submit" :disabled="!canPay">
-            <span v-if="!loading">Pagar con Payphone</span>
-            <span v-else><i class="fa-solid fa-spinner fa-spin" /> Procesando...</span>
-          </button>
+          <div class="cta-container">
+            <button class="cta-button" type="submit" :disabled="!canPay">
+              <span v-if="!loading" class="btn-content">
+                Completar Inscripción Segura <i class="fa-solid fa-arrow-right" />
+              </span>
+              <span v-else><i class="fa-solid fa-spinner fa-spin" /> Procesando pago...</span>
+            </button>
+            
+            <div class="payment-methods">
+              <i class="fa-brands fa-cc-visa" />
+              <i class="fa-brands fa-cc-mastercard" />
+              <i class="fa-brands fa-cc-amex" />
+              <span class="secure-text"><i class="fa-solid fa-shield-halved" /> Pagos encriptados</span>
+            </div>
+          </div>
 
-          <p class="legal">Al continuar aceptas nuestros Términos de uso.</p>
+          <p class="legal-text">Garantía de satisfacción aplicada. Al pagar aceptas nuestros términos.</p>
         </form>
       </div>
 
       <div class="right">
-        <div class="card">
-          <h3 class="plan">Plan Expert: Acceso Total 12 meses</h3>
-          <p class="info">Pago único anual. Renovación automática cada año.</p>
+        <div class="order-card">
+          <div class="card-header">
+            <h3 class="plan-name">Plan Founder Vitalicio</h3>
+            <span class="badge-lifetime">DE POR VIDA</span>
+          </div>
 
-          <div class="pricing">
-            <div class="row">
-              <span>Total a pagar</span>
-              <span class="price">$ 297</span>
+          <div class="timer-box">
+            <span class="timer-label">🔥 Oferta Flash expira en:</span>
+            <span class="timer-digits">{{ remaining }}</span>
+          </div>
+
+          <div class="pricing-stack">
+            <div class="price-row total">
+              <span>Inversión Total</span>
+              <span class="amount">$297 <span class="currency">USD</span></span>
             </div>
-            <div class="row small">
-              <span class="strike">Precio regular $349</span>
-              <span class="save">Ahorras $52</span>
+            <div class="price-row savings">
+              <span class="original">Precio Regular: $990</span>
+              <span class="saved-amount">AHORRAS $693 hoy</span>
             </div>
-            <div class="row small">
-              <span>Equivale a ~ $ 25 / mes</span>
+            <div class="price-row note">
+              <i class="fa-solid fa-check-circle" /> Un solo pago único. Sin mensualidades.
             </div>
           </div>
 
-          <div class="timer">
-            El precio especial termina en: {{ remaining }}
-          </div>
+          <div class="divider" />
 
-          <div class="benefits">
-            <div class="title">Todo lo que obtienes</div>
+          <div class="benefits-list">
+            <h4>Tu acceso incluye todo:</h4>
             <ul>
-              <li><i class="fa-solid fa-check" /> Acceso a todas las escuelas y cursos</li>
-              <li><i class="fa-solid fa-check" /> Certificados digitales verificables</li>
-              <li><i class="fa-solid fa-check" /> Actualizaciones y nuevos cursos todo el año</li>
-              <li><i class="fa-solid fa-check" /> Eventos y sesiones exclusivas para miembros</li>
+              <li>
+                <i class="fa-solid fa-check" /> 
+                <span><strong>Acceso de por vida</strong> a la escuela</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" /> 
+                <span>Certificados digitales verificables</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" /> 
+                <span>Actualizaciones futuras (2025/26) sin costo</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" /> 
+                <span>Comunidad Privada de Dueños</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-file-excel" /> 
+                <span>Plantillas de Excel descargables</span>
+              </li>
             </ul>
           </div>
         </div>
+        
+        <div class="mini-proof">
+          <div class="stars">★★★★★</div>
+          <p>"La mejor inversión para mi restaurante este año"</p>
+        </div>
       </div>
+
     </div>
   </div>
+
   <ExitIntentModal
     :open="exitOpen"
-    message="Estás a un paso de asegurar tu acceso. Si sales de esta página ahora, el sistema liberará tu cupo y no podemos garantizarte el precio de $297 cuando regreses."
+    title="¡No pierdas tu estatus de Founder!"
+    message="Estás a punto de abandonar la oferta de $297. Si sales, el precio volverá a $990 y perderás los bonos de por vida."
     @close="stayOnCheckout"
     @stay="stayOnCheckout"
     @leave="leaveCheckout"
@@ -197,208 +251,412 @@ function leaveCheckout() {
 </template>
 
 <style lang="scss" scoped>
-.checkout {
+// --- TUS VARIABLES ---
+$FUDMASTER-PINK: #DA4167;
+$FUDMASTER-DARK: #010D27;
+$FUDMASTER-LIGHT: #f5f3ef;
+$FUDMASTER-BLUE: #0a81d1;
+$FUDMASTER-ORANGE: #F96E46;
+$FUDMASTER-GREEN: #2BBB92;
+$white: #ffffff;
+$alert-error: #ef4444;
+$alert-error-bg: rgba($alert-error, 0.1);
+
+// --- ESTILOS ---
+
+.checkout-wrapper {
   width: 100%;
-  padding: 24px 16px;
+  min-height: 100vh;
+  background-color: $FUDMASTER-LIGHT; // Fondo claro para limpieza visual
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif; // Asegúrate de tener una fuente limpia
 }
 
 .container {
   width: 100%;
-  max-width: 1080px;
+  max-width: 1100px;
   margin: 0 auto;
   display: grid;
-  gap: 24px;
+  gap: 40px;
   grid-template-columns: 1fr;
 }
 
 @media (min-width: 960px) {
   .container {
-    grid-template-columns: 2fr 1.4fr;
+    grid-template-columns: 1.2fr 1fr; // Izquierda un poco más ancha
+    align-items: start;
   }
 }
 
+// IZQUIERDA
 .left {
-  display: grid;
-  gap: 12px;
-}
-
-.brand img {
-  width: 120px;
-}
-
-.title {
-  color: $FUDMASTER-DARK;
-  font-size: 24px;
-  margin: 0;
-}
-
-.subtitle {
-  color: rgba($FUDMASTER-DARK, 0.6);
-  font-size: 14px;
-  margin: 0 0 8px;
-}
-
-.form {
-  display: grid;
-  gap: 12px;
-}
-
-.label {
-  font-size: 13px;
-  color: rgba($FUDMASTER-DARK, 0.7);
-}
-
-.input {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid rgba($FUDMASTER-DARK, 0.15);
-  border-radius: 10px;
-  padding: 12px 14px;
-  background: rgba($FUDMASTER-DARK, 0.06);
+  flex-direction: column;
+  gap: 20px;
 }
 
-.input i {
-  color: $FUDMASTER-DARK;
-}
-
-.input input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: $FUDMASTER-DARK;
-  font-size: 16px;
-}
-
-.error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: $alert-error;
-  background: $alert-error-bg;
-  border: 1px solid rgba($alert-error, 0.3);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
-}
-
-.login-hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: rgba($FUDMASTER-DARK, 0.7);
-}
-
-.login-link {
-  background: transparent;
-  color: $FUDMASTER-GREEN;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.cta {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: $FUDMASTER-GREEN;
-  color: $white;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 14px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.legal {
-  text-align: center;
-  color: rgba($FUDMASTER-DARK, 0.6);
-  font-size: 12px;
-}
-
-.right .card {
-  display: grid;
-  gap: 12px;
-  background: $white;
-  border-radius: 16px;
-  padding: 16px;
-}
-
-.plan {
-  color: $FUDMASTER-DARK;
-  font-weight: 700;
-  font-size: 20px;
-  margin: 0;
-}
-
-.info {
-  color: rgba($FUDMASTER-DARK, 0.6);
-  font-size: 14px;
-  margin: 0;
-}
-
-.pricing {
-  display: grid;
-  gap: 6px;
-}
-
-.row {
+.header-secure {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: rgba($FUDMASTER-DARK, 0.8);
+  margin-bottom: 10px;
+  
+  .brand img {
+    height: 40px; // Ajusta según tu logo
+    width: auto;
+  }
+  
+  .secure-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba($FUDMASTER-DARK, 0.5);
+    font-weight: 600;
+    background: rgba($FUDMASTER-DARK, 0.05);
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
 }
 
-.row.small {
-  font-size: 14px;
-  color: rgba($FUDMASTER-DARK, 0.6);
-}
-
-.price {
-  font-weight: 700;
-}
-
-.strike {
-  text-decoration: line-through;
-  color: rgba($FUDMASTER-DARK, 0.5);
-}
-
-.save {
-  color: $FUDMASTER-GREEN;
-  font-weight: 600;
-}
-
-.timer {
-  background: $FUDMASTER-GREEN;
-  color: $white;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-weight: 700;
-}
-
-.benefits .title {
+.main-title {
+  font-size: 28px;
+  line-height: 1.2;
   color: $FUDMASTER-DARK;
-  font-weight: 700;
-}
-
-.benefits ul {
-  list-style: none;
-  padding: 0;
+  font-weight: 800;
   margin: 0;
-  display: grid;
-  gap: 8px;
+  
+  .highlight {
+    color: $FUDMASTER-ORANGE; // Resaltar "Por vida"
+    display: block; // En movil bajará de linea, se ve mejor
+    @media(min-width: 768px) { display: inline; }
+  }
 }
 
-.benefits li {
+.subtitle {
+  color: rgba($FUDMASTER-DARK, 0.7);
+  font-size: 16px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// FORMULARIO
+.form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: $white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba($FUDMASTER-DARK, 0.04);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: $FUDMASTER-DARK;
+  }
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid transparent; // Preparado para focus
+  background: $FUDMASTER-LIGHT;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.2s;
+  
+  &:focus-within {
+    background: $white;
+    border-color: $FUDMASTER-BLUE;
+    box-shadow: 0 0 0 4px rgba($FUDMASTER-BLUE, 0.1);
+  }
+  
+  .icon {
+    color: rgba($FUDMASTER-DARK, 0.4);
+    font-size: 18px;
+  }
+  
+  input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 16px;
+    color: $FUDMASTER-DARK;
+    font-weight: 500;
+    
+    &::placeholder {
+      color: rgba($FUDMASTER-DARK, 0.3);
+    }
+  }
+}
+
+.error-box {
+  background: $alert-error-bg;
+  color: $alert-error;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba($FUDMASTER-DARK, 0.8);
+}
+
+.login-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba($FUDMASTER-DARK, 0.6);
+  
+  .link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: $FUDMASTER-BLUE;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+// CTA SECTION
+.cta-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cta-button {
+  width: 100%;
+  background: $FUDMASTER-GREEN;
+  color: $white;
+  border: none;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+  box-shadow: 0 10px 20px -5px rgba($FUDMASTER-GREEN, 0.4);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+}
+
+.payment-methods {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  color: rgba($FUDMASTER-DARK, 0.4);
+  font-size: 24px;
+  
+  .secure-text {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-left: 1px solid rgba($FUDMASTER-DARK, 0.1);
+    padding-left: 15px;
+  }
+}
+
+.legal-text {
+  text-align: center;
+  font-size: 12px;
+  color: rgba($FUDMASTER-DARK, 0.4);
+  margin: 0;
+}
+
+
+// DERECHA (TARJETA)
+.order-card {
+  background: $white;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba($FUDMASTER-DARK, 0.05);
+  box-shadow: 0 20px 40px -10px rgba($FUDMASTER-DARK, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  
+  .plan-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: $FUDMASTER-DARK;
+    max-width: 60%;
+  }
+  
+  .badge-lifetime {
+    background: $FUDMASTER-DARK;
+    color: $white;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+}
+
+.timer-box {
+  background: $FUDMASTER-ORANGE;
+  color: $white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-size: 14px;
+  box-shadow: 0 4px 10px rgba($FUDMASTER-ORANGE, 0.3);
+}
+
+.pricing-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    &.total {
+      font-size: 18px;
+      color: $FUDMASTER-DARK;
+      font-weight: 600;
+      
+      .amount {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        color: $FUDMASTER-DARK;
+      }
+      .currency {
+        font-size: 14px;
+        vertical-align: middle;
+        font-weight: 600;
+        color: rgba($FUDMASTER-DARK, 0.5);
+      }
+    }
+    
+    &.savings {
+      font-size: 14px;
+      
+      .original {
+        text-decoration: line-through;
+        color: rgba($FUDMASTER-DARK, 0.4);
+      }
+      
+      .saved-amount {
+        color: $FUDMASTER-PINK; // Usamos el PINK para resaltar el ahorro
+        font-weight: 800;
+        background: rgba($FUDMASTER-PINK, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    }
+    
+    &.note {
+      font-size: 13px;
+      color: $FUDMASTER-GREEN; // Verde para confirmar que es un solo pago
+      justify-content: flex-start;
+      gap: 6px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+  }
+}
+
+.divider {
+  height: 1px;
+  background: rgba($FUDMASTER-DARK, 0.08);
+  margin: 24px 0;
+}
+
+.benefits-list {
+  h4 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    color: $FUDMASTER-DARK;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 14px;
+  }
+  
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba($FUDMASTER-DARK, 0.8);
+    line-height: 1.4;
+    
+    i {
+      color: $FUDMASTER-GREEN;
+      margin-top: 2px; // Alinear ópticamente con texto
+    }
+    
+    strong {
+      color: $FUDMASTER-DARK;
+    }
+  }
+}
+
+.mini-proof {
+  text-align: center;
+  margin-top: 20px;
+  
+  .stars {
+    color: #FFC107; // Oro standard para estrellas
+    letter-spacing: 2px;
+    font-size: 18px;
+  }
+  
+  p {
+    font-size: 12px;
+    font-style: italic;
+    color: rgba($FUDMASTER-DARK, 0.6);
+    margin: 4px 0 0;
+  }
 }
 </style>
