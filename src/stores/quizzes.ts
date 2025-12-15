@@ -26,12 +26,27 @@ export const useQuizzesStore = defineStore('quizzes', {
         this.loading = false
       }
     },
-    async loadById(courseId: string | number, quizId: string | number) {
+    async loadById(courseId: string | number, quizId: string | number, options?: { userId?: string }) {
       this.loading = true
       this.error = ''
       try {
-        const { data } = await quizzesService.getById(courseId, quizId)
+        const { data } = await quizzesService.getById(courseId, quizId, { params: options?.userId ? { userId: options.userId } : undefined })
         this.currentQuiz = (data as any)?.quiz || null
+        const msg = String((data as any)?.message || '')
+        const passed = Boolean((data as any)?.passed || false)
+        const score = Number((data as any)?.score || 0)
+        const ra = (data as any)?.retryAfterMs
+        const rv = (data as any)?.retryAvailableAt
+        if (passed) {
+          this.approvedAlready = true
+          this.lastResult = { score, passed: true, submission: null }
+          this.error = msg || 'Quiz already approved.'
+        } else if (typeof ra === 'number' || typeof rv === 'string') {
+          this.retryAfterMs = typeof ra === 'number' ? ra : null
+          this.retryAvailableAt = typeof rv === 'string' ? rv : null
+          this.error = msg || 'Retry not allowed yet.'
+          this.lastResult = null
+        }
       } catch (err: any) {
         this.error = String(err?.message || 'Error al cargar el quiz')
         this.currentQuiz = null
