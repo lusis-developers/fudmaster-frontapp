@@ -3,6 +3,7 @@ import { onMounted, computed, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
+import { useQuizzesStore } from '@/stores/quizzes'
 import CommentsThread from '@/components/CommentsThread.vue'
 import LectureVideoPlayer from '@/components/lecture/LectureVideoPlayer.vue'
 import LectureAttachments from '@/components/lecture/LectureAttachments.vue'
@@ -12,6 +13,7 @@ const route = useRoute()
 const router = useRouter()
 const store = useCoursesStore()
 const userStore = useUserStore()
+const quizzesStore = useQuizzesStore()
 
 const courseId = computed(() => route.params.id as string)
 const lectureId = computed(() => route.params.lectureId as string)
@@ -105,6 +107,17 @@ function goToNext(scope: 'global' | 'section' = 'global') {
 
 function goBack() { router.back() }
 
+const finishedCourse = computed(() => {
+  const c = Number(store.progress?.completed || 0)
+  const t = Number(store.progress?.total || 0)
+  return t > 0 && c >= t
+})
+
+async function startQuiz() {
+  if (!courseId.value) return
+  router.push(`/courses/${courseId.value}/quiz`)
+}
+
 onMounted(async () => {
   if (courseId.value) await store.fetchById(courseId.value)
   if (courseId.value && lectureId.value) await store.fetchLecture(courseId.value, lectureId.value)
@@ -163,6 +176,20 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
             <div v-if="completeError" class="next-error"><i class="fa-solid fa-triangle-exclamation" /> {{ completeError }}</div>
             <div v-else-if="completeSuccess" class="next-success"><i class="fa-solid fa-check" /> {{ completeSuccess }}</div>
           </div>
+          <div v-else class="next-panel">
+            <div class="next-head">
+              <h3 class="next-title"><i class="fa-solid fa-clipboard-check" /> Quiz final</h3>
+              <p class="next-meta">Has llegado al final del curso.</p>
+            </div>
+            <div class="next-actions">
+              <button v-if="finishedCourse" class="next-cta" type="button" :disabled="quizzesStore.loading" @click="startQuiz">
+                <i :class="quizzesStore.loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
+                {{ quizzesStore.loading ? 'Cargando...' : 'Iniciar quiz' }}
+              </button>
+              <div v-else class="next-error"><i class="fa-solid fa-triangle-exclamation" /> Completa todas las clases para activar el quiz.</div>
+            </div>
+          </div>
+          
         </div>
         <div class="right">
           <aside class="comments-sidebar">
@@ -345,6 +372,7 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
 .next-cta:hover {
   filter: brightness(0.95);
 }
+
 
 .comments-sidebar {
   background: var(--bg);
