@@ -9,6 +9,8 @@ import MyCourses from "../views/User/MyCourses.vue";
 import AllCourses from "../views/User/AllCourses.vue";
 import CourseDetail from "../views/User/CourseDetail.vue";
 import LectureDetail from "../views/User/LectureDetail.vue";
+import QuizView from "../views/User/QuizView.vue";
+import QuizResult from "../views/User/QuizResult.vue";
 
 // Landingpage
 import NicoleLanding from "../views/Landing/NicoleLanding.vue";
@@ -53,6 +55,30 @@ const routes: Array<RouteRecordRaw> = [
         path: 'courses/:id/lectures/:lectureId',
         component: LectureDetail,
         meta: { title: 'Clase', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quiz',
+        component: QuizView,
+        meta: { title: 'Quiz', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quiz/result',
+        component: QuizResult,
+        meta: { title: 'Resultado del quiz', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quizzes/:quizId',
+        component: QuizView,
+        meta: { title: 'Quiz', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quizzes/:quizId/result',
+        component: QuizResult,
+        meta: { title: 'Resultado del quiz', requiresAuth: true }
       }
       ,
       {
