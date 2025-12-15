@@ -16,6 +16,7 @@ const menu = [
   { name: 'Mis cursos', link: '/courses', icon: 'fa-solid fa-book' },
   { name: 'Escuelas', link: '/careers', icon: 'fa-solid fa-graduation-cap' },
   { name: 'Todos los cursos', link: '/courses/all', icon: 'fa-solid fa-list' },
+  { name: 'Editar perfil', link: '/profile/edit', icon: 'fa-solid fa-user-pen' },
 ];
 
 const route = useRoute()
@@ -71,6 +72,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    
 
     .setting-button {
       background: none;
@@ -91,6 +93,7 @@ onMounted(async () => {
     }
 
   }
+  
 
   &-menu {
     list-style: none;
