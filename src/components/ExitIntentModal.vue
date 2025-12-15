@@ -6,10 +6,14 @@ interface Props {
   open: boolean
   title?: string
   message: string
+  primaryLabel?: string
+  secondaryLabel?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '¡Espera! 🛑',
+  primaryLabel: 'Mantener mi descuento y Continuar',
+  secondaryLabel: 'Entiendo, prefiero arriesgarme a pagar $349 más tarde',
 })
 
 const emit = defineEmits<{
@@ -59,7 +63,7 @@ function handleOverlayClick() {
               class="btn-primary" 
               @click="emit('stay')"
             >
-              Mantener mi descuento y Continuar
+              {{ props.primaryLabel }}
             </button>
             
             <button 
@@ -67,7 +71,7 @@ function handleOverlayClick() {
               class="btn-secondary" 
               @click="emit('leave')"
             >
-              Entiendo, prefiero arriesgarme a pagar $349 más tarde
+              {{ props.secondaryLabel }}
             </button>
           </div>
 
