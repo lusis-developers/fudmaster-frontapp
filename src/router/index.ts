@@ -17,6 +17,7 @@ import Checkout from "../views/Checkout.vue";
 import PayResponse from "../views/PayResponse.vue";
 import Careers from "../views/Careers.vue";
 import CareerDetail from "../views/CareerDetail.vue";
+import ProfileEdit from "../views/User/ProfileEdit.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -64,6 +65,12 @@ const routes: Array<RouteRecordRaw> = [
         path: 'careers/:id',
         component: CareerDetail,
         meta: { title: 'Detalle de carrera', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'profile/edit',
+        component: ProfileEdit,
+        meta: { title: 'Editar perfil', requiresAuth: true }
       }
     ]
   },
