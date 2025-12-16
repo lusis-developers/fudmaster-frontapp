@@ -150,8 +150,15 @@ async function startQuiz() {
     if (first?._id) {
       await quizzesStore.loadById(courseId.value, first._id, { userId: userId.value })
     }
+
+    if (quizzesStore.approvedAlready) {
+      if (first?._id) router.push(`/courses/${courseId.value}/quizzes/${first._id}/result`)
+      else router.push(`/courses/${courseId.value}/quiz/result`)
+      return
+    }
+
     const blocked = !!(quizzesStore.retryAfterMs || quizzesStore.retryAvailableAt)
-    if (blocked && !quizzesStore.approvedAlready) {
+    if (blocked) {
       quizModalOpen.value = true
       return
     }
