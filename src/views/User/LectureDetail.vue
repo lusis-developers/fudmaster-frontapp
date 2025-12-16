@@ -68,8 +68,6 @@ const nextLecture = computed(() => {
   return all[idx + 1] || null
 })
 
-// removed unused
-
 function goToNext(scope: 'global' | 'section' = 'global') {
   if (!courseId.value) return
   console.log('[LectureDetail] Continuar click', { scope, courseId: courseId.value, lectureId: lectureId.value })
@@ -108,11 +106,6 @@ function goToNext(scope: 'global' | 'section' = 'global') {
 
 function goBack() { router.back() }
 
-const finishedCourse = computed(() => {
-  const c = Number(store.progress?.completed || 0)
-  const t = Number(store.progress?.total || 0)
-  return t > 0 && c >= t
-})
 
 const checkingQuiz = ref(false)
 const quizModalOpen = ref(false)
