@@ -232,11 +232,10 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
               <p class="next-meta">Has llegado al final del curso.</p>
             </div>
             <div class="next-actions">
-              <button v-if="finishedCourse" class="next-cta" type="button" :disabled="quizzesStore.loading || checkingQuiz" @click="startQuiz">
+              <button class="next-cta" type="button" :disabled="quizzesStore.loading || checkingQuiz" @click="startQuiz">
                 <i :class="(quizzesStore.loading || checkingQuiz) ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
                 {{ (quizzesStore.loading || checkingQuiz) ? 'Cargando...' : 'Iniciar quiz' }}
               </button>
-              <div v-else class="next-error"><i class="fa-solid fa-triangle-exclamation" /> Completa todas las clases para activar el quiz.</div>
             </div>
           </div>
           
