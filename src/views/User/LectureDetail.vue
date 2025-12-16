@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
 import { useQuizzesStore } from '@/stores/quizzes'
+import ExitIntentModal from '@/components/ExitIntentModal.vue'
 import CommentsThread from '@/components/CommentsThread.vue'
 import LectureVideoPlayer from '@/components/lecture/LectureVideoPlayer.vue'
 import LectureAttachments from '@/components/lecture/LectureAttachments.vue'
@@ -113,9 +114,51 @@ const finishedCourse = computed(() => {
   return t > 0 && c >= t
 })
 
+const checkingQuiz = ref(false)
+const quizModalOpen = ref(false)
+function formatCountdown(ms: number): string {
+  const total = Math.max(ms, 0)
+  const s = Math.floor(total / 1000)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  const pad = (n: number) => String(n).padStart(2, '0')
+  if (h > 0) return `${pad(h)}:${pad(m)}:${pad(sec)}`
+  return `${pad(m)}:${pad(sec)}`
+}
+function remainingBlockMs(): number {
+  const ra = quizzesStore.retryAfterMs
+  const rv = quizzesStore.retryAvailableAt
+  if (rv) {
+    const t = new Date(rv).getTime()
+    if (!Number.isNaN(t)) return Math.max(t - Date.now(), 0)
+  }
+  const add = typeof ra === 'number' ? ra : 0
+  return Math.max(add, 0)
+}
+const quizModalTitle = computed(() => 'No puedes iniciar el quiz aún')
+const quizModalMessage = computed(() => `Podrás iniciar en ${formatCountdown(remainingBlockMs())}`)
+function closeQuizModal() { quizModalOpen.value = false }
+function onQuizModalStay() { quizModalOpen.value = false }
+function onQuizModalLeave() { if (courseId.value) router.push(`/courses/${courseId.value}`) }
 async function startQuiz() {
   if (!courseId.value) return
-  router.push(`/courses/${courseId.value}/quiz`)
+  checkingQuiz.value = true
+  try {
+    if (!quizzesStore.quizzes.length) await quizzesStore.loadByCourse(courseId.value)
+    const first = quizzesStore.quizzes[0]
+    if (first?._id) {
+      await quizzesStore.loadById(courseId.value, first._id, { userId: userId.value })
+    }
+    const blocked = !!(quizzesStore.retryAfterMs || quizzesStore.retryAvailableAt)
+    if (blocked && !quizzesStore.approvedAlready) {
+      quizModalOpen.value = true
+      return
+    }
+    router.push(`/courses/${courseId.value}/quiz`)
+  } finally {
+    checkingQuiz.value = false
+  }
 }
 
 onMounted(async () => {
@@ -182,9 +225,9 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
               <p class="next-meta">Has llegado al final del curso.</p>
             </div>
             <div class="next-actions">
-              <button v-if="finishedCourse" class="next-cta" type="button" :disabled="quizzesStore.loading" @click="startQuiz">
-                <i :class="quizzesStore.loading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
-                {{ quizzesStore.loading ? 'Cargando...' : 'Iniciar quiz' }}
+              <button v-if="finishedCourse" class="next-cta" type="button" :disabled="quizzesStore.loading || checkingQuiz" @click="startQuiz">
+                <i :class="(quizzesStore.loading || checkingQuiz) ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
+                {{ (quizzesStore.loading || checkingQuiz) ? 'Cargando...' : 'Iniciar quiz' }}
               </button>
               <div v-else class="next-error"><i class="fa-solid fa-triangle-exclamation" /> Completa todas las clases para activar el quiz.</div>
             </div>
@@ -199,6 +242,16 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
       </div>
     </div>
   </div>
+  <ExitIntentModal
+    :open="quizModalOpen"
+    :title="quizModalTitle"
+    :message="quizModalMessage"
+    primary-label="Entendido"
+    secondary-label="Volver al curso"
+    @close="closeQuizModal"
+    @stay="onQuizModalStay"
+    @leave="onQuizModalLeave"
+  />
 </template>
 
 <style lang="scss" scoped>
