@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, watch } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
@@ -54,14 +54,17 @@ onMounted(async () => {
   if (id.value) {
     await store.fetchById(id.value)
     if (userId.value) {
-      console.log('[CourseDetail] fetchProgress start')
       await store.fetchProgress(id.value, userId.value)
-      console.log('[CourseDetail] fetchProgress done', { progress: store.progress })
     }
   }
 })
 
-watch(progressPercent, (p) => { try { console.log('[CourseDetail] progressPercent', p) } catch {} })
+const finishedCourse = computed(() => {
+  const c = Number(store.progress?.completed || 0)
+  const t = Number(store.progress?.total || 0)
+  return t > 0 && c >= t
+})
+
 
 function openLecture(lectureId: number | string) {
   if (!id.value) return
@@ -69,6 +72,11 @@ function openLecture(lectureId: number | string) {
 }
 
 function goBack() { router.back() }
+
+async function startQuiz() {
+  if (!id.value) return
+  router.push(`/courses/${id.value}/quiz`)
+}
 </script>
 
 <template>
@@ -106,7 +114,8 @@ function goBack() { router.back() }
                 <span class="author-name"><i class="fa-solid fa-user" /> {{ store.currentCourse.author_bio.name }}</span>
               </div>
               <div class="actions">
-                <button class="cta-start" type="button" :disabled="!firstLectureId" @click="firstLectureId && openLecture(firstLectureId)"><i class="fa-solid fa-play" /> Continuar curso</button>
+                <button class="cta-start" type="button" :disabled="!firstLectureId" @click="firstLectureId && openLecture(firstLectureId)"><i class="fa-solid fa-play" /> Iniciar clase</button>
+                <button v-if="finishedCourse" class="cta-start" type="button" @click="startQuiz"><i class="fa-solid fa-list-check" /> Iniciar quiz</button>
               </div>
             </div>
           </div>
@@ -114,6 +123,7 @@ function goBack() { router.back() }
             <PlaylistSidebar :sections="store.currentCourse.lecture_sections" :course-id="String(id)" :completed-lecture-ids="store.progress.completedLectureIds" />
           </div>
         </div>
+        
       </div>
     </div>
   </div>
@@ -183,6 +193,8 @@ function goBack() { router.back() }
 .cta-start { background: $FUDMASTER-PINK; color: $white; border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
 .cta-start:disabled { background: color-mix(in oklab, var(--bg), var(--text) 6%); color: color-mix(in oklab, var(--text), transparent 50%); border: 1px solid var(--border); cursor: not-allowed; }
 .cta-start:hover { filter: brightness(0.95); }
+
+.quiz-section { margin-top: 16px; }
 
 
 </style>

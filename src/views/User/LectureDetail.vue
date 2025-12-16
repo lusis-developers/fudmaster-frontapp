@@ -3,6 +3,8 @@ import { onMounted, computed, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
+import { useQuizzesStore } from '@/stores/quizzes'
+import ExitIntentModal from '@/components/ExitIntentModal.vue'
 import CommentsThread from '@/components/CommentsThread.vue'
 import LectureVideoPlayer from '@/components/lecture/LectureVideoPlayer.vue'
 import LectureAttachments from '@/components/lecture/LectureAttachments.vue'
@@ -12,6 +14,7 @@ const route = useRoute()
 const router = useRouter()
 const store = useCoursesStore()
 const userStore = useUserStore()
+const quizzesStore = useQuizzesStore()
 
 const courseId = computed(() => route.params.id as string)
 const lectureId = computed(() => route.params.lectureId as string)
@@ -105,6 +108,66 @@ function goToNext(scope: 'global' | 'section' = 'global') {
 
 function goBack() { router.back() }
 
+const finishedCourse = computed(() => {
+  const c = Number(store.progress?.completed || 0)
+  const t = Number(store.progress?.total || 0)
+  return t > 0 && c >= t
+})
+
+const checkingQuiz = ref(false)
+const quizModalOpen = ref(false)
+function formatCountdown(ms: number): string {
+  const total = Math.max(ms, 0)
+  const s = Math.floor(total / 1000)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  const pad = (n: number) => String(n).padStart(2, '0')
+  if (h > 0) return `${pad(h)}:${pad(m)}:${pad(sec)}`
+  return `${pad(m)}:${pad(sec)}`
+}
+function remainingBlockMs(): number {
+  const ra = quizzesStore.retryAfterMs
+  const rv = quizzesStore.retryAvailableAt
+  if (rv) {
+    const t = new Date(rv).getTime()
+    if (!Number.isNaN(t)) return Math.max(t - Date.now(), 0)
+  }
+  const add = typeof ra === 'number' ? ra : 0
+  return Math.max(add, 0)
+}
+const quizModalTitle = computed(() => 'No puedes iniciar el quiz aún')
+const quizModalMessage = computed(() => `Podrás iniciar en ${formatCountdown(remainingBlockMs())}`)
+function closeQuizModal() { quizModalOpen.value = false }
+function onQuizModalStay() { quizModalOpen.value = false }
+function onQuizModalLeave() { if (courseId.value) router.push(`/courses/${courseId.value}`) }
+async function startQuiz() {
+  if (!courseId.value) return
+  checkingQuiz.value = true
+  try {
+    if (!quizzesStore.quizzes.length) await quizzesStore.loadByCourse(courseId.value)
+    const first = quizzesStore.quizzes[0]
+    if (first?._id) {
+      await quizzesStore.loadById(courseId.value, first._id, { userId: userId.value })
+    }
+
+    if (quizzesStore.approvedAlready) {
+      if (first?._id) router.push(`/courses/${courseId.value}/quizzes/${first._id}/result`)
+      else router.push(`/courses/${courseId.value}/quiz/result`)
+      return
+    }
+
+    const blocked = !!(quizzesStore.retryAfterMs || quizzesStore.retryAvailableAt)
+    if (blocked) {
+      quizModalOpen.value = true
+      return
+    }
+    router.push(`/courses/${courseId.value}/quiz`)
+  } finally {
+    checkingQuiz.value = false
+  }
+}
+
 onMounted(async () => {
   if (courseId.value) await store.fetchById(courseId.value)
   if (courseId.value && lectureId.value) await store.fetchLecture(courseId.value, lectureId.value)
@@ -163,6 +226,20 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
             <div v-if="completeError" class="next-error"><i class="fa-solid fa-triangle-exclamation" /> {{ completeError }}</div>
             <div v-else-if="completeSuccess" class="next-success"><i class="fa-solid fa-check" /> {{ completeSuccess }}</div>
           </div>
+          <div v-else class="next-panel">
+            <div class="next-head">
+              <h3 class="next-title"><i class="fa-solid fa-clipboard-check" /> Quiz final</h3>
+              <p class="next-meta">Has llegado al final del curso.</p>
+            </div>
+            <div class="next-actions">
+              <button v-if="finishedCourse" class="next-cta" type="button" :disabled="quizzesStore.loading || checkingQuiz" @click="startQuiz">
+                <i :class="(quizzesStore.loading || checkingQuiz) ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
+                {{ (quizzesStore.loading || checkingQuiz) ? 'Cargando...' : 'Iniciar quiz' }}
+              </button>
+              <div v-else class="next-error"><i class="fa-solid fa-triangle-exclamation" /> Completa todas las clases para activar el quiz.</div>
+            </div>
+          </div>
+          
         </div>
         <div class="right">
           <aside class="comments-sidebar">
@@ -172,6 +249,16 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
       </div>
     </div>
   </div>
+  <ExitIntentModal
+    :open="quizModalOpen"
+    :title="quizModalTitle"
+    :message="quizModalMessage"
+    primary-label="Entendido"
+    secondary-label="Volver al curso"
+    @close="closeQuizModal"
+    @stay="onQuizModalStay"
+    @leave="onQuizModalLeave"
+  />
 </template>
 
 <style lang="scss" scoped>
@@ -345,6 +432,7 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
 .next-cta:hover {
   filter: brightness(0.95);
 }
+
 
 .comments-sidebar {
   background: var(--bg);

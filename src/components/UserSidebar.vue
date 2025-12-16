@@ -15,6 +15,7 @@ const props = defineProps({
 const menu = [
   { name: 'Mis cursos', link: '/courses', icon: 'fa-solid fa-book' },
   { name: 'Escuelas', link: '/careers', icon: 'fa-solid fa-graduation-cap' },
+  { name: 'Certificados', link: '/certificates', icon: 'fa-solid fa-certificate' },
   { name: 'Todos los cursos', link: '/courses/all', icon: 'fa-solid fa-list' },
   { name: 'Editar perfil', link: '/profile/edit', icon: 'fa-solid fa-user-pen' },
 ];

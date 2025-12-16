@@ -9,6 +9,9 @@ import MyCourses from "../views/User/MyCourses.vue";
 import AllCourses from "../views/User/AllCourses.vue";
 import CourseDetail from "../views/User/CourseDetail.vue";
 import LectureDetail from "../views/User/LectureDetail.vue";
+import QuizView from "../views/User/QuizView.vue";
+import QuizResult from "../views/User/QuizResult.vue";
+import CertificatesView from "../views/User/CertificatesView.vue";
 
 // Landingpage
 import NicoleLanding from "../views/Landing/NicoleLanding.vue";
@@ -56,6 +59,30 @@ const routes: Array<RouteRecordRaw> = [
       }
       ,
       {
+        path: 'courses/:id/quiz',
+        component: QuizView,
+        meta: { title: 'Quiz', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quiz/result',
+        component: QuizResult,
+        meta: { title: 'Resultado del quiz', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quizzes/:quizId',
+        component: QuizView,
+        meta: { title: 'Quiz', requiresAuth: true }
+      }
+      ,
+      {
+        path: 'courses/:id/quizzes/:quizId/result',
+        component: QuizResult,
+        meta: { title: 'Resultado del quiz', requiresAuth: true }
+      }
+      ,
+      {
         path: 'careers',
         component: Careers,
         meta: { title: 'Escuelas o Carreras', requiresAuth: true }
@@ -71,6 +98,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'profile/edit',
         component: ProfileEdit,
         meta: { title: 'Editar perfil', requiresAuth: true }
+      },
+      {
+        path: 'certificates',
+        component: CertificatesView,
+        meta: { title: 'Mis Certificados', requiresAuth: true }
       }
     ]
   },
@@ -104,6 +136,15 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: 'Respuesta de pago' },
     children: [
       { path: '', component: PayResponse }
+    ]
+  },
+  {
+    path: '/verify-certificate',
+    component: PublicLayout,
+    meta: { title: 'Verificar Certificado' },
+    children: [
+      { path: '', component: () => import('../views/Public/VerifyCertificate.vue') },
+      { path: ':id', component: () => import('../views/Public/VerifyCertificate.vue') }
     ]
   }
 ]

@@ -146,11 +146,11 @@ class APIBase {
       })
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        const errorDetails = {
+        throw {
           status: error.response.status,
           message: error.response.data?.message || error.message,
+          data: error.response.data,
         }
-        throw errorDetails
       }
 
       throw { status: 500, message: 'Unknown error' }
@@ -186,6 +186,7 @@ class APIBase {
         throw {
           status: error.response.status,
           message: error.response.data?.message || error.message,
+          data: error.response.data,
         }
       }
       throw { status: 500, message: 'Unknown error' }
@@ -211,11 +212,11 @@ class APIBase {
       })
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        const errorDetails = {
+        throw {
           status: error.response.status,
           message: error.response.data?.message || error.message,
+          data: error.response.data,
         }
-        throw errorDetails
       }
 
       throw { status: 500, message: 'Unknown error' }
@@ -230,11 +231,11 @@ class APIBase {
       })
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        const errorDetails = {
+        throw {
           status: error.response.status,
           message: error.response.data?.message || error.message,
+          data: error.response.data,
         }
-        throw errorDetails
       }
 
       throw { status: 500, message: 'Unknown error' }
@@ -249,11 +250,11 @@ class APIBase {
       })
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        const errorDetails = {
+        throw {
           status: error.response.status,
           message: error.response.data?.message || error.message,
+          data: error.response.data,
         }
-        throw errorDetails
       }
 
       throw { status: 500, message: 'Unknown error' }
@@ -268,11 +269,11 @@ class APIBase {
       })
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        const errorDetails = {
+        throw {
           status: error.response.status,
           message: error.response.data?.message || error.message,
+          data: error.response.data,
         }
-        throw errorDetails
       }
 
       throw { status: 500, message: 'Unknown error' }

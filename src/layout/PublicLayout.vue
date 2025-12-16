@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import UserHeader from '../components/UserHeader.vue'
+import PublicHeader from '../components/PublicHeader.vue'
 </script>
 
 <template>
   <div class="wrapper">
     <div class="header">
-      <UserHeader :showMenuButton="false" />
+      <PublicHeader />
     </div>
     <div class="view">
       <RouterView />

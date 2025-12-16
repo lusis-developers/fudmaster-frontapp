@@ -6,7 +6,6 @@ import gamificationService from '@/services/gamification.service'
 import { useUserStore } from '@/stores/user'
 import lightLogo from '../assets/fudmaster-color.png'
 import darkLogo from '../assets/fudmaster-dark.png'
-import ExitIntentModal from './ExitIntentModal.vue'
 
 const props = defineProps({
   showMenuButton: {
@@ -37,12 +36,10 @@ const points = ref<number | null>(null)
 const pointsLoading = ref(false)
 const pointsError = ref('')
 
-const exitOpen = ref(false)
 function onLogoClick() {
-  if (route.path === '/checkout') exitOpen.value = true
+  // Navigation logic can be added here if needed
+  router.push('/')
 }
-function stayOnCheckout() { exitOpen.value = false }
-function goToLanding() { exitOpen.value = false; router.push('/landing-page') }
 
 async function fetchPoints() {
   if (!isLoggedIn.value || !userId.value) { points.value = null; return }
@@ -148,14 +145,6 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
       </div>
     </div>
   </header>
-  <ExitIntentModal
-    v-if="route.path === '/checkout'"
-    :open="exitOpen"
-    message="Estás a un paso de asegurar tu acceso. Si sales de esta página ahora, el sistema liberará tu cupo y no podemos garantizarte el precio de $297 cuando regreses."
-    @close="stayOnCheckout"
-    @stay="stayOnCheckout"
-    @leave="goToLanding"
-  />
 </template>
 
 <style lang="scss" scoped>
