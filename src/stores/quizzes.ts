@@ -40,7 +40,7 @@ export const useQuizzesStore = defineStore('quizzes', {
         if (passed) {
           this.approvedAlready = true
           this.lastResult = { score, passed: true, submission: null }
-          this.error = msg || 'Quiz already approved.'
+          this.error = ''
         } else if (typeof ra === 'number' || typeof rv === 'string') {
           this.retryAfterMs = typeof ra === 'number' ? ra : null
           this.retryAvailableAt = typeof rv === 'string' ? rv : null
