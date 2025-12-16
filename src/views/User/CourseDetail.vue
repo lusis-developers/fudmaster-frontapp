@@ -25,6 +25,7 @@ const progressText = computed(() => {
   return `${c}/${t}`
 })
 
+
 function sanitizeUrl(url?: string) {
   return (url || '').toString().replace(/`/g, '').trim()
 }
@@ -59,11 +60,6 @@ onMounted(async () => {
   }
 })
 
-const finishedCourse = computed(() => {
-  const c = Number(store.progress?.completed || 0)
-  const t = Number(store.progress?.total || 0)
-  return t > 0 && c >= t
-})
 
 
 function openLecture(lectureId: number | string) {
