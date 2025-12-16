@@ -11,6 +11,7 @@ import CourseDetail from "../views/User/CourseDetail.vue";
 import LectureDetail from "../views/User/LectureDetail.vue";
 import QuizView from "../views/User/QuizView.vue";
 import QuizResult from "../views/User/QuizResult.vue";
+import CertificatesView from "../views/User/CertificatesView.vue";
 
 // Landingpage
 import NicoleLanding from "../views/Landing/NicoleLanding.vue";
@@ -97,6 +98,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'profile/edit',
         component: ProfileEdit,
         meta: { title: 'Editar perfil', requiresAuth: true }
+      },
+      {
+        path: 'certificates',
+        component: CertificatesView,
+        meta: { title: 'Mis Certificados', requiresAuth: true }
       }
     ]
   },
