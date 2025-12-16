@@ -115,7 +115,7 @@ async function startQuiz() {
               </div>
               <div class="actions">
                 <button class="cta-start" type="button" :disabled="!firstLectureId" @click="firstLectureId && openLecture(firstLectureId)"><i class="fa-solid fa-play" /> Iniciar clase</button>
-                <button v-if="finishedCourse" class="cta-start" type="button" @click="startQuiz"><i class="fa-solid fa-list-check" /> Iniciar quiz</button>
+                <button class="cta-start" type="button" @click="startQuiz"><i class="fa-solid fa-list-check" /> Iniciar quiz</button>
               </div>
             </div>
           </div>
