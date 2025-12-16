@@ -137,6 +137,15 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       { path: '', component: PayResponse }
     ]
+  },
+  {
+    path: '/verify-certificate',
+    component: PublicLayout,
+    meta: { title: 'Verificar Certificado' },
+    children: [
+      { path: '', component: () => import('../views/Public/VerifyCertificate.vue') },
+      { path: ':id', component: () => import('../views/Public/VerifyCertificate.vue') }
+    ]
   }
 ]
 
