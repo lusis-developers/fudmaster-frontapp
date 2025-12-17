@@ -1,7 +1,28 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+
 const router = useRouter()
 function goToCheckout() { router.push('/checkout') }
+
+onMounted(() => {
+  if (!document.getElementById('wistia-player-js')) {
+    const script1 = document.createElement('script')
+    script1.src = "https://fast.wistia.com/player.js"
+    script1.async = true
+    script1.id = 'wistia-player-js'
+    document.head.appendChild(script1)
+  }
+
+  if (!document.getElementById('wistia-embed-js')) {
+    const script2 = document.createElement('script')
+    script2.src = "https://fast.wistia.com/embed/2f09oyiyxq.js"
+    script2.async = true
+    script2.type = "module"
+    script2.id = 'wistia-embed-js'
+    document.head.appendChild(script2)
+  }
+})
 </script>
 
 <template>
@@ -12,17 +33,7 @@ function goToCheckout() { router.push('/checkout') }
         
         <div class="vsl-video-column">
           <div class="video-frame">
-            <iframe
-              src="https://fast.wistia.net/embed/iframe/ecdxw6wr0v"
-              title="Video de presentación"
-              allow="autoplay; fullscreen"
-              allowfullscreen
-              class="wistia_embed"
-              name="wistia_embed"
-              msallowfullscreen
-              width="100%"
-              height="380px">
-            </iframe>
+            <wistia-player media-id="2f09oyiyxq" aspect="1.7777777777777777"></wistia-player>
           </div>
         </div>
 
@@ -92,26 +103,19 @@ function goToCheckout() { router.push('/checkout') }
 
   .video-frame {
     position: relative;
-    padding-bottom: 56.25%; /* Aspect Ratio 16:9 */
-    height: 0;
+    /* padding-bottom: 56.25%; Aspect Ratio 16:9 - Removed as Wistia Player handles it */
+    height: auto;
     overflow: hidden;
     border-radius: 12px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     background: #000;
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      display: block;
-      border: none;
-      height: 420px;  
-      @media screen and (max-width: 300px) {
-        height: 280px;  
-        // iframe {
-        // }
-      }
-    }
-
+  }
+  
+  wistia-player[media-id='2f09oyiyxq']:not(:defined) {
+    background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/2f09oyiyxq/swatch');
+    display: block;
+    filter: blur(5px);
+    padding-top: 56.25%;
   }
 
   /* --- COLUMNA TEXTO --- */
