@@ -117,6 +117,23 @@ export interface ChangePasswordResponse {
   message: string
 }
 
+export interface RequestPasswordRecoveryBody {
+  email: string
+}
+
+export interface RequestPasswordRecoveryResponse {
+  message: string
+}
+
+export interface ResetPasswordBody {
+  token: string
+  newPassword: string
+}
+
+export interface ResetPasswordResponse {
+  message: string
+}
+
 class UsersService extends APIBase {
   async create<T>(body: CreateUserBody, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.post<T>('users', body, undefined, config)
@@ -151,6 +168,14 @@ class UsersService extends APIBase {
 
   async updateById<T = UpdateUserResponse>(userId: string | number, body: UpdateUserBody): Promise<AxiosResponse<T>> {
     return this.patch<T>(`users/${userId}`, body)
+  }
+
+  async requestPasswordRecovery<T = RequestPasswordRecoveryResponse>(body: RequestPasswordRecoveryBody): Promise<AxiosResponse<T>> {
+    return this.post<T>('users/request-password-recovery', body)
+  }
+
+  async resetPassword<T = ResetPasswordResponse>(body: ResetPasswordBody): Promise<AxiosResponse<T>> {
+    return this.post<T>('users/reset-password', body)
   }
 }
 
