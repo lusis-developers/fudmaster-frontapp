@@ -88,6 +88,14 @@ export const useUserStore = defineStore('user', {
     async changePassword(userId: string | number, payload: ChangePasswordBody): Promise<ChangePasswordResponse> {
       const { data } = await usersService.changePassword<ChangePasswordResponse>(userId, payload)
       return data
+    },
+    async requestPasswordRecovery(email: string): Promise<RequestPasswordRecoveryResponse> {
+      const { data } = await usersService.requestPasswordRecovery({ email })
+      return data
+    },
+    async resetPassword(token: string, newPassword: string): Promise<ResetPasswordResponse> {
+      const { data } = await usersService.resetPassword({ token, newPassword })
+      return data
     }
   }
 })
