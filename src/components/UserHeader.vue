@@ -31,7 +31,7 @@ const isFreeUser = computed(() => {
   // Asumimos que si no hay plan, es free por defecto o estamos cargando.
   // Pero si ya está logueado y el plan es 'free', mostramos el banner.
   if (!userStore.id) userStore.hydrate()
-  return userStore.plan === 'free'
+  return userStore.accountType === 'free'
 })
 
 const isDarkTheme = ref(false)
