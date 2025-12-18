@@ -22,6 +22,7 @@ export interface UserState {
 	heardAboutUs?: HeardAboutUs | null;
 	heardAboutUsOther?: string | null;
 	points?: number | null;
+	plan?: 'free' | 'founder' | null;
 }
 
 export const useUserStore = defineStore("user", {
@@ -37,21 +38,25 @@ export const useUserStore = defineStore("user", {
 		heardAboutUs: null,
 		heardAboutUsOther: null,
 		points: null,
+		plan: null,
 	}),
 	actions: {
 		hydrate() {
 			const token = localStorage.getItem("access_token");
 			const id = localStorage.getItem("user_id");
 			const t = localStorage.getItem("teachable_user_id");
+			const p = localStorage.getItem("user_plan"); // Recuperar plan
 			this.isAuthenticated = !!token;
 			this.id = id || null;
 			this.teachableUserId = t || null;
+			this.plan = (p as 'free' | 'founder') || null;
 		},
 		setUser(payload: {
 			id?: string | number;
 			name?: string;
 			email?: string;
 			teachableUserId?: string | number;
+			plan?: 'free' | 'founder';
 		}) {
 			if (payload?.id !== undefined && payload?.id !== null) {
 				this.id = payload.id;
@@ -73,6 +78,12 @@ export const useUserStore = defineStore("user", {
 					);
 				} catch {}
 			}
+			if (payload?.plan) {
+				this.plan = payload.plan;
+				try {
+					localStorage.setItem("user_plan", payload.plan);
+				} catch {}
+			}
 			this.isAuthenticated = true;
 		},
 		clear() {
@@ -87,11 +98,15 @@ export const useUserStore = defineStore("user", {
 			this.heardAboutUs = null;
 			this.heardAboutUsOther = null;
 			this.points = null;
+			this.plan = null;
 			try {
 				localStorage.removeItem("user_id");
 			} catch {}
 			try {
 				localStorage.removeItem("teachable_user_id");
+			} catch {}
+			try {
+				localStorage.removeItem("user_plan");
 			} catch {}
 		},
 		async updateById(
@@ -113,6 +128,12 @@ export const useUserStore = defineStore("user", {
 							"teachable_user_id",
 							String(u.teachableUserId)
 						);
+				} catch {}
+			}
+			if (u.plan) {
+				this.plan = u.plan;
+				try {
+					localStorage.setItem("user_plan", u.plan);
 				} catch {}
 			}
 			this.gender = u.gender;
