@@ -181,7 +181,7 @@ router.beforeEach((to) => {
     return { path: '/landing-page', replace: true }
   }
 
-  if ((to.path === '/login' || to.path === '/checkout') && hasToken) {
+  if (to.path === '/login' && hasToken) {
     return { path: '/', replace: true }
   }
 })
