@@ -42,7 +42,6 @@ const logoSrc = computed(() => (isDarkTheme.value ? darkLogo : lightLogo))
 
 const points = computed(() => gamificationStore.points)
 const pointsLoading = computed(() => gamificationStore.loading)
-const pointsError = computed(() => gamificationStore.error)
 
 const pointsAnimating = ref(false)
 watch(points, (newVal, oldVal) => {
