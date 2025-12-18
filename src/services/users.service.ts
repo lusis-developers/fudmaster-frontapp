@@ -90,6 +90,7 @@ export interface SafeUser {
   heardAboutUs: HeardAboutUs | null
   heardAboutUsOther: string | null
   points: number
+  plan?: 'free' | 'founder' // Campo agregado para distinguir tipo de usuario
   courses: CourseAccess[]
   careers: CareerAccess[]
   payments: PaymentItem[]
