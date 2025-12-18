@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { type UpdateUserBody, type UpdateUserResponse, type Gender, type HeardAboutUs, type GetUserResponse, type SafeUser } from '@/services/users.service'
 import usersService from '@/services/users.service'
+import UpgradeBanner from '@/components/UpgradeBanner.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -260,6 +261,11 @@ watch(currentPassword, () => {
         <span class="success" v-if="success">{{ success }}</span>
       </div>
     </form>
+
+    <div style="margin: 20px 0;">
+      <UpgradeBanner />
+    </div>
+
     <div class="divider"></div>
     <form class="form" @submit.prevent="changePassword">
       <div class="field">
