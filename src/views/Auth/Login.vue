@@ -48,14 +48,36 @@ async function loginWithGoogle() {
     
     // 4. Guardar sesión y redirigir (Igual que en login normal)
     localStorage.setItem('access_token', data.token)
+    
     try {
       // Manejo flexible de IDs según vengan del backend (_id, id, user_id)
       const uid = (data.user as any)?.id || (data.user as any)?._id || (data.user as any)?.user_id
-      const name = (data.user as any)?.name || null
-      const emailVal = (data.user as any)?.email || null
       
-      if (uid) localStorage.setItem('user_id', String(uid))
-      userStore.setUser({ id: uid, name, email: emailVal })
+      if (uid) {
+        localStorage.setItem('user_id', String(uid))
+        
+        // 5. RE-FETCH: Obtener perfil completo y fresco para asegurar accountType (Founder, etc.)
+        try {
+          const { data: userData } = await usersService.getById(uid)
+          const freshUser = userData.user
+          
+          localStorage.setItem('user', JSON.stringify(freshUser))
+          userStore.setUser({
+            id: freshUser._id || (freshUser as any).id,
+            name: freshUser.name,
+            email: freshUser.email,
+            accountType: freshUser.accountType || (freshUser as any).account_type
+          })
+        } catch (fetchErr) {
+          console.warn('Error refrescando perfil post-login:', fetchErr)
+          // Fallback al usuario que vino en login
+          userStore.setUser({ 
+            id: uid, 
+            name: (data.user as any)?.name, 
+            email: (data.user as any)?.email 
+          })
+        }
+      }
     } catch (err) {
       console.warn('Error parseando usuario:', err)
     }
@@ -91,10 +113,31 @@ async function submit() {
     localStorage.setItem('access_token', data.token)
     try {
       const uid = (data.user as any)?.id || (data.user as any)?._id || (data.user as any)?.user_id
-      const name = (data.user as any)?.name || null
-      const emailVal = (data.user as any)?.email || null
-      if (uid) localStorage.setItem('user_id', String(uid))
-      userStore.setUser({ id: uid, name, email: emailVal })
+      
+      if (uid) {
+        localStorage.setItem('user_id', String(uid))
+        
+        // RE-FETCH: Asegurar perfil fresco
+        try {
+          const { data: userData } = await usersService.getById(uid)
+          const freshUser = userData.user
+          
+          localStorage.setItem('user', JSON.stringify(freshUser))
+          userStore.setUser({
+            id: freshUser._id || (freshUser as any).id,
+            name: freshUser.name,
+            email: freshUser.email,
+            accountType: freshUser.accountType || (freshUser as any).account_type
+          })
+        } catch (fetchErr) {
+          console.warn('Error refrescando perfil submit:', fetchErr)
+          userStore.setUser({ 
+            id: uid, 
+            name: (data.user as any)?.name, 
+            email: (data.user as any)?.email 
+          })
+        }
+      }
     } catch {}
     
     router.push('/')

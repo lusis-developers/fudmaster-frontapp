@@ -4,10 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import PayphoneService from '@/services/payphone.service'
 import usersService, { type RegisterFromPaymentBody, type RegisterFromPaymentResponse } from '@/services/users.service'
 import { useCheckoutStore } from '@/stores/checkout'
+import { useUserStore } from '@/stores/user'
 import { track, sendEvent } from '@/services/facebook.service'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(true)
 const error = ref('')
@@ -80,6 +82,15 @@ onMounted(async () => {
         const { data } = await usersService.registerFromPayment<RegisterFromPaymentResponse>(payload)
         if (data?.user) {
           localStorage.setItem('user', JSON.stringify(data.user))
+          
+          // Actualizar el store global de usuario inmediatamente
+          const u = data.user as any
+          userStore.setUser({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            accountType: (u.account_type || u.accountType || 'expert')
+          })
         }
         checkoutStore.clear()
       } catch (err: any) {
