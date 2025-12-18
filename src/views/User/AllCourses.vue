@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
+import { useUserStore } from '@/stores/user'
 import { makePlaceholders } from '@/mocks/courses.mock'
 
 const store = useCoursesStore()
+const userStore = useUserStore()
+const router = useRouter()
 
 function sanitizeUrl(url?: string) {
   return (url || '').toString().replace(/`/g, '').trim()
@@ -74,6 +78,11 @@ const displayCourses = computed(() => {
   return [...list, ...placeholders]
 })
 
+const isFreeUser = computed(() => {
+  if (!userStore.id) userStore.hydrate()
+  return userStore.accountType === 'free'
+})
+
 const modalOpen = ref(false)
 const modalTitle = ref('')
 function openUpcoming(c: any) { modalTitle.value = String(c?.name || c?.title || 'Próximamente'); modalOpen.value = true }
@@ -98,6 +107,23 @@ window.setInterval(() => {
       <p class="subtitle">Explora y descubre todos nuestros cursos disponibles.</p>
       <div class="upcoming-notice">
         <i class="fa-regular fa-bell" /> Pronto estarán disponibles más cursos durante este mes.
+      </div>
+      
+      <!-- CTA para usuarios Free -->
+      <div v-if="isFreeUser" class="upgrade-banner" @click="router.push('/checkout')">
+        <div class="upgrade-content">
+          <div class="upgrade-icon">
+            <i class="fa-solid fa-crown" />
+          </div>
+          <div class="upgrade-text">
+            <h3>Hazte Founder</h3>
+            <p>Accede a todos los cursos y contenido exclusivo.</p>
+          </div>
+        </div>
+        <button class="upgrade-btn">
+          Obtener Acceso
+          <i class="fa-solid fa-arrow-right" />
+        </button>
       </div>
 
       <div v-if="store.loading" class="loading">
@@ -196,6 +222,87 @@ window.setInterval(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.upgrade-banner {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 165, 0, 0.15);
+    
+    .upgrade-btn {
+      transform: scale(1.05);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .upgrade-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.upgrade-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.upgrade-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #000;
+  flex-shrink: 0;
+}
+
+.upgrade-text {
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text);
+  }
+  
+  p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: color-mix(in oklab, var(--text), transparent 30%);
+  }
+}
+
+.upgrade-btn {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #000;
+  border: none;
+  border-radius: 99px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+  white-space: nowrap;
 }
 
 .loading,
