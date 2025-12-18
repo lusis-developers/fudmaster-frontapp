@@ -155,6 +155,14 @@ const routes: Array<RouteRecordRaw> = [
     ]
   },
   {
+    path: '/pay-cancel',
+    component: PublicLayout,
+    meta: { title: 'Pago Cancelado' },
+    children: [
+      { path: '', component: () => import('../views/PayCancel.vue') }
+    ]
+  },
+  {
     path: '/verify-certificate',
     component: PublicLayout,
     meta: { title: 'Verificar Certificado' },
