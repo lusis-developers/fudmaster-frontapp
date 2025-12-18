@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useUserStore } from '@/stores/user'
 
 type ConfirmPayload = { title?: string; message?: string; confirmText?: string; cancelText?: string; onConfirm?: () => void }
 
+const userStore = useUserStore()
 const confirmOpen = ref(false)
 const confirmTitle = ref('')
 const confirmMessage = ref('')
@@ -33,6 +35,12 @@ onBeforeUnmount(() => { window.removeEventListener('app:confirm', onGlobalConfir
 onMounted(() => {
   const t = localStorage.getItem('theme')
   if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t)
+
+  // Hydrate user and fetch fresh data
+  userStore.hydrate()
+  if (userStore.isAuthenticated && userStore.id) {
+    userStore.fetchUser(userStore.id)
+  }
 })
 </script>
 
