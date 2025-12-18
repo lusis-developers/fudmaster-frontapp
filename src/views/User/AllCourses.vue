@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
-import { useUserStore } from '@/stores/user'
 import UpgradeBanner from '@/components/UpgradeBanner.vue'
 import { makePlaceholders } from '@/mocks/courses.mock'
 
 const store = useCoursesStore()
-const userStore = useUserStore()
-const router = useRouter()
 
 function sanitizeUrl(url?: string) {
   return (url || '').toString().replace(/`/g, '').trim()
@@ -77,11 +73,6 @@ const displayCourses = computed(() => {
   const need = Math.max(0, 12 - list.length)
   const placeholders = makePlaceholders(need)
   return [...list, ...placeholders]
-})
-
-const isFreeUser = computed(() => {
-  if (!userStore.id) userStore.hydrate()
-  return userStore.accountType === 'free'
 })
 
 const modalOpen = ref(false)
