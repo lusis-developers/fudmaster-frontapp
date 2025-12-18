@@ -2,8 +2,8 @@
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import usersService from '@/services/users.service'
-import gamificationService from '@/services/gamification.service'
 import { useUserStore } from '@/stores/user'
+import { useGamificationStore } from '@/stores/gamification.store'
 import lightLogo from '../assets/fudmaster-color.png'
 import darkLogo from '../assets/fudmaster-dark.png'
 
@@ -18,6 +18,7 @@ const emit = defineEmits(['toggleSidebar'])
 
 const router = useRouter()
 const userStore = useUserStore()
+const gamificationStore = useGamificationStore()
 const isLoggedIn = ref(!!localStorage.getItem('access_token'))
 const route = useRoute()
 
@@ -39,9 +40,17 @@ let themeObserver: MutationObserver | null = null
 function updateThemeFlag() { isDarkTheme.value = document.documentElement.getAttribute('data-theme') === 'dark' }
 const logoSrc = computed(() => (isDarkTheme.value ? darkLogo : lightLogo))
 
-const points = ref<number | null>(null)
-const pointsLoading = ref(false)
-const pointsError = ref('')
+const points = computed(() => gamificationStore.points)
+const pointsLoading = computed(() => gamificationStore.loading)
+const pointsError = computed(() => gamificationStore.error)
+
+const pointsAnimating = ref(false)
+watch(points, (newVal, oldVal) => {
+  if (newVal !== null && oldVal !== null && newVal > oldVal) {
+    pointsAnimating.value = true
+    setTimeout(() => { pointsAnimating.value = false }, 1000)
+  }
+})
 
 function onLogoClick() {
   // Navigation logic can be added here if needed
@@ -49,21 +58,8 @@ function onLogoClick() {
 }
 
 async function fetchPoints() {
-  if (!isLoggedIn.value || !userId.value) { points.value = null; return }
-  pointsLoading.value = true
-  pointsError.value = ''
-  try {
-    const { data, headers } = await gamificationService.getUserPoints(userId.value)
-    const headerVal = Number((headers as any)['x-user-points'] || (headers as any)['X-User-Points'] || NaN)
-    const bodyVal = Number((data as any)?.points ?? NaN)
-    const final = Number.isFinite(headerVal) ? headerVal : (Number.isFinite(bodyVal) ? bodyVal : 0)
-    points.value = final
-  } catch (e: any) {
-    pointsError.value = e?.message || 'Error al obtener puntos'
-    points.value = null
-  } finally {
-    pointsLoading.value = false
-  }
+  if (!isLoggedIn.value || !userId.value) { gamificationStore.reset(); return }
+  await gamificationStore.fetchPoints(userId.value)
 }
 
 function handleMenuClick() {
@@ -119,7 +115,7 @@ onBeforeUnmount(() => {
   try { themeObserver?.disconnect() } catch {}
 })
 
-watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
+watch(isLoggedIn, (val) => { if (val) fetchPoints(); else gamificationStore.reset() })
 </script>
 
 <template>
@@ -148,7 +144,7 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
             <i class="fa-solid fa-user"></i>
             <span class="account-text">Mi cuenta</span>
             <span v-if="pointsLoading" class="points-chip loading"><i class="fa-solid fa-spinner fa-spin"></i></span>
-            <span v-else-if="points !== null" class="points-chip"><i class="fa-solid fa-trophy"></i> {{ points }}</span>
+            <span v-else-if="points !== null" class="points-chip" :class="{ animating: pointsAnimating }"><i class="fa-solid fa-trophy"></i> {{ points }}</span>
           </div>
           <button class="logout-button" @click="confirmLogout">
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -281,6 +277,16 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else points.value = null })
           background: transparent;
           color: var(--text);
           border: 1px dashed var(--border);
+        }
+
+        .points-chip.animating {
+          animation: points-gain 1s ease-out;
+        }
+
+        @keyframes points-gain {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); background: $FUDMASTER-GREEN; }
+          100% { transform: scale(1); }
         }
 
         .logout-button {

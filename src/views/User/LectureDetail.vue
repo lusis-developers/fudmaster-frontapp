@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
 import { useQuizzesStore } from '@/stores/quizzes'
+import { useGamificationStore } from '@/stores/gamification.store'
 import ExitIntentModal from '@/components/ExitIntentModal.vue'
 import CommentsThread from '@/components/CommentsThread.vue'
 import LectureVideoPlayer from '@/components/lecture/LectureVideoPlayer.vue'
@@ -15,6 +16,7 @@ const router = useRouter()
 const store = useCoursesStore()
 const userStore = useUserStore()
 const quizzesStore = useQuizzesStore()
+const gamificationStore = useGamificationStore()
 
 const courseId = computed(() => route.params.id as string)
 const lectureId = computed(() => route.params.lectureId as string)
@@ -37,6 +39,8 @@ const progressText = computed(() => {
   const t = Number(store.progress?.total || 0)
   return `${c}/${t}`
 })
+
+const userPoints = computed(() => gamificationStore.points)
 
 const completing = ref(false)
 const completeError = ref('')
@@ -91,6 +95,9 @@ function goToNext(scope: 'global' | 'section' = 'global') {
             console.log('[LectureDetail] fetchProgress start')
             await store.fetchProgress(courseId.value, userId.value)
             console.log('[LectureDetail] fetchProgress done', { progress: store.progress })
+            console.log('[LectureDetail] fetchPoints start')
+            await gamificationStore.fetchPoints(userId.value)
+            console.log('[LectureDetail] fetchPoints done', { points: gamificationStore.points })
           }
         }
       } catch (e) {
