@@ -2,6 +2,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
+import UpgradeBanner from '@/components/UpgradeBanner.vue'
 import CourseCard from '@/components/CourseCard.vue'
 import { makePlaceholders } from '@/mocks/courses.mock'
 
@@ -79,6 +80,8 @@ onMounted(() => {
       <div class="upcoming-notice">
         <i class="fa-regular fa-bell" /> Pronto estarán disponibles más cursos durante este mes.
       </div>
+
+      <UpgradeBanner />
 
       <div v-if="store.loading" class="loading">
         <i class="fa-solid fa-spinner fa-spin" /> Cargando cursos...
