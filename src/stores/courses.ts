@@ -16,6 +16,7 @@ export const useCoursesStore = defineStore('courses', {
     },
     loading: false as boolean,
     error: '' as string,
+    errorCode: null as number | null,
     meta: {
       total: 0,
       page: 1,
@@ -203,7 +204,9 @@ export const useCoursesStore = defineStore('courses', {
     }
     ,
     async fetchProgress(courseId: string | number, userId: string | number) {
+      this.loading = true
       this.error = ''
+      this.errorCode = null
       try {
         const { data } = await coursesService.getProgress<any>(courseId, userId)
         const root = (data as any)?.progress ?? data
@@ -233,8 +236,21 @@ export const useCoursesStore = defineStore('courses', {
         }
         return this.progress
       } catch (e: any) {
-        this.error = e?.message || 'Error al obtener progreso'
+        console.log('[coursesStore] fetchProgress error', e)
+        const status = e?.response?.status
+        const msg = e?.response?.data?.message || e?.message || ''
+        
+        this.error = msg || 'Error al obtener progreso'
+        
+        if (status === 404 || msg === 'Not Found' || msg.includes('404')) {
+          this.errorCode = 404
+        } else {
+          this.errorCode = status || 500
+        }
+        
         return null
+      } finally {
+        this.loading = false
       }
     }
     ,
