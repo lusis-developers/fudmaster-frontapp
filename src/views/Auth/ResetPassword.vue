@@ -37,17 +37,20 @@ function goToLogin() {
 }
 
 async function submit() {
-  if (!password.value || !confirmPassword.value) {
+  const pwd = password.value.trim()
+  const confirm = confirmPassword.value.trim()
+
+  if (!pwd || !confirm) {
     error.value = 'Por favor completa todos los campos.'
     return
   }
   
-  if (password.value !== confirmPassword.value) {
+  if (pwd !== confirm) {
     error.value = 'Las contraseñas no coinciden.'
     return
   }
   
-  if (password.value.length < 6) {
+  if (pwd.length < 6) {
     error.value = 'La contraseña debe tener al menos 6 caracteres.'
     return
   }
@@ -62,7 +65,7 @@ async function submit() {
   successMessage.value = ''
   
   try {
-    const response = await userStore.resetPassword(token.value, password.value)
+    const response = await userStore.resetPassword(token.value, pwd)
     successMessage.value = response.message || 'Contraseña restablecida exitosamente.'
     
     // Redirect to login after success

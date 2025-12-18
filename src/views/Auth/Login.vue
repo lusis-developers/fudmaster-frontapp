@@ -30,7 +30,7 @@ async function submit() {
   error.value = ''
   
   try {
-    const body: LoginBody = { email: email.value.trim(), password: password.value }
+    const body: LoginBody = { email: email.value.trim(), password: password.value.trim() }
     const { data } = await usersService.login<LoginResponse>(body)
     
     localStorage.setItem('access_token', data.token)
