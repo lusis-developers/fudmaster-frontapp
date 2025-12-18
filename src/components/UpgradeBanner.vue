@@ -7,6 +7,10 @@ const props = defineProps({
   variant: {
     type: String as () => 'default' | 'sidebar',
     default: 'default'
+  },
+  compact: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -27,25 +31,33 @@ function goToCheckout() {
   <div 
     v-if="isFreeUser" 
     class="upgrade-banner" 
-    :class="props.variant"
+    :class="[props.variant, { 'compact': compact }]"
     @click="goToCheckout"
   >
-    <div class="upgrade-content">
-      <div v-if="variant === 'default'" class="upgrade-icon">
-        <i class="fa-solid fa-crown" />
-      </div>
-      <i v-else class="fa-solid fa-crown icon-crown" />
-      
-      <div class="upgrade-text">
-        <h3 v-if="variant === 'default'">Hazte Founder</h3>
-        <p>{{ variant === 'default' ? 'Accede a todos los cursos y contenido exclusivo.' : 'Desbloquea todo el contenido' }}</p>
-      </div>
+    <!-- Compact View -->
+    <div v-if="compact" class="compact-content">
+      <i class="fa-solid fa-crown icon-crown" />
     </div>
-    
-    <button class="upgrade-btn">
-      {{ variant === 'default' ? 'Obtener Acceso' : 'Hazte Founder' }}
-      <i v-if="variant === 'default'" class="fa-solid fa-arrow-right" />
-    </button>
+
+    <!-- Full View -->
+    <div v-else class="full-content">
+      <div class="upgrade-content">
+        <div v-if="variant === 'default'" class="upgrade-icon">
+          <i class="fa-solid fa-crown" />
+        </div>
+        <i v-else class="fa-solid fa-crown icon-crown" />
+        
+        <div class="upgrade-text">
+          <h3 v-if="variant === 'default'">Hazte Founder</h3>
+          <p>{{ variant === 'default' ? 'Accede a todos los cursos y contenido exclusivo.' : 'Desbloquea todo el contenido' }}</p>
+        </div>
+      </div>
+      
+      <button class="upgrade-btn">
+        {{ variant === 'default' ? 'Obtener Acceso' : 'Hazte Founder' }}
+        <i v-if="variant === 'default'" class="fa-solid fa-arrow-right" />
+      </button>
+    </div>
   </div>
 </template>
 
@@ -55,15 +67,19 @@ function goToCheckout() {
   border: 1px solid rgba(255, 165, 0, 0.3);
   border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  overflow: hidden;
   
   // Default variant styles
   &.default {
     padding: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    
+    .full-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
     
     &:hover {
       transform: translateY(-2px);
@@ -75,8 +91,10 @@ function goToCheckout() {
     }
     
     @media (max-width: 640px) {
-      flex-direction: column;
-      align-items: flex-start;
+      .full-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
       
       .upgrade-btn {
         width: 100%;
@@ -136,32 +154,62 @@ function goToCheckout() {
 
   // Sidebar variant styles
   &.sidebar {
-    margin-top: auto;
-    padding: 16px;
+    padding: 12px;
     text-align: center;
+    background: transparent;
+    border: 1px dashed rgba(255, 165, 0, 0.3);
+    
+    &:hover {
+      border-color: rgba(255, 165, 0, 0.6);
+      background: rgba(255, 165, 0, 0.05);
+    }
+    
+    &.compact {
+      padding: 8px;
+      border: none;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+      &:hover {
+        background: rgba(255, 165, 0, 0.1);
+        border-radius: 8px;
+      }
+      
+      .icon-crown {
+        font-size: 20px;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+      }
+    }
     
     .upgrade-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      margin-bottom: 12px;
       
       .icon-crown {
-        font-size: 24px;
+        font-size: 20px;
         background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         -webkit-background-clip: text;
         background-clip: text;
+
         -webkit-text-fill-color: transparent;
-        margin-bottom: 4px;
       }
       
       .upgrade-text {
         p {
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
           color: var(--text);
           margin: 0;
-          line-height: 1.4;
+          line-height: 1.3;
         }
       }
     }
@@ -170,18 +218,17 @@ function goToCheckout() {
       width: 100%;
       background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 8px;
       color: #000;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 11px;
       cursor: pointer;
-      margin-top: 8px;
       transition: transform 0.2s;
       
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 165, 0, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
       }
     }
   }
