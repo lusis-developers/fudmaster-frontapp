@@ -40,8 +40,6 @@ const progressText = computed(() => {
   return `${c}/${t}`
 })
 
-const userPoints = computed(() => gamificationStore.points)
-
 const completing = ref(false)
 const completeError = ref('')
 const completeSuccess = ref('')
