@@ -241,7 +241,7 @@ function leaveCheckout() {
           <div class="pricing-stack">
             <div class="price-row total">
               <span>Inversión Total</span>
-              <span class="amount">$1 <span class="currency">USD</span></span>
+              <span class="amount">$297 <span class="currency">USD</span></span>
             </div>
             <div class="price-row savings">
               <span class="original">Precio Regular: $990</span>
@@ -293,7 +293,7 @@ function leaveCheckout() {
   <ExitIntentModal
     :open="exitOpen"
     title="¡No pierdas tu estatus de Founder!"
-    message="Estás a punto de abandonar la oferta de $1. Si sales, el precio volverá a $990 y perderás los bonos de por vida."
+    message="Estás a punto de abandonar la oferta de $297. Si sales, el precio volverá a $990 y perderás los bonos de por vida."
     @close="stayOnCheckout"
     @stay="stayOnCheckout"
     @leave="leaveCheckout"
