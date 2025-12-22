@@ -111,13 +111,13 @@ async function pay() {
       }
     }
 
-    track('InitiateCheckout', { value: 297, currency: 'USD' })
-    sendEvent('InitiateCheckout', { value: 297, currency: 'USD' })
+    track('InitiateCheckout', { value: 1, currency: 'USD' })
+    sendEvent('InitiateCheckout', { value: 1, currency: 'USD' })
     
     const result = await PayphoneService.preparePayment({
       productId: 'FM-FOUNDER-LIFETIME',
       productName: 'Plan Founder Lifetime',
-      price: 297,
+      price: 1,
       customerName: name.value.trim(),
       customerEmail: email.value.trim(),
     })
@@ -126,7 +126,7 @@ async function pay() {
       checkoutStore.setFromForm(name.value, email.value)
       checkoutStore.setClientTransactionId(result.clientTransactionId)
       track('AddPaymentInfo')
-      sendEvent('AddPaymentInfo', { value: 297, currency: 'USD' })
+      sendEvent('AddPaymentInfo', { value: 1, currency: 'USD' })
       PayphoneService.redirectToPayment(result.payWithPayPhone)
     } else {
       error.value = 'Error de conexión con la pasarela.'
