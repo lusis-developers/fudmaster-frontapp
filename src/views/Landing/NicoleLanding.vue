@@ -8,11 +8,13 @@ import UrgentBar from './components/UrgentBar.vue';
 import FinalOffer from './components/FinalOffer.vue';
 import TheRoadmap from './components/TheRoadmap.vue';
 import TheOpportunity from './components/TheOpportunity.vue';
+import GiantCountdown from './components/GiantCountdown.vue';
 </script>
 
 <template>
   <div class="wrapper">
     <UrgentBar />
+    <GiantCountdown />
     <Hero />
     <TheOpportunity />
     <Problem />
