@@ -111,13 +111,13 @@ async function pay() {
       }
     }
 
-    track('InitiateCheckout', { value: 297, currency: 'USD' })
-    sendEvent('InitiateCheckout', { value: 297, currency: 'USD' })
+    track('InitiateCheckout', { value: 1, currency: 'USD' })
+    sendEvent('InitiateCheckout', { value: 1, currency: 'USD' })
     
     const result = await PayphoneService.preparePayment({
-      productId: 'FM-FOUNDER-LIFETIME', // Actualizado ID producto
-      productName: 'Plan Founder Lifetime',
-      price: 297,
+      productId: 'FM-FOUNDER-LIFETIME-TEST', // Actualizado ID producto
+      productName: 'Plan Founder Lifetime (Test)',
+      price: 1,
       customerName: name.value.trim(),
       customerEmail: email.value.trim(),
     })
@@ -126,7 +126,7 @@ async function pay() {
       checkoutStore.setFromForm(name.value, email.value)
       checkoutStore.setClientTransactionId(result.clientTransactionId)
       track('AddPaymentInfo')
-      sendEvent('AddPaymentInfo', { value: 297, currency: 'USD' })
+      sendEvent('AddPaymentInfo', { value: 1, currency: 'USD' })
       PayphoneService.redirectToPayment(result.payWithPayPhone)
     } else {
       error.value = 'Error de conexión con la pasarela.'
@@ -293,7 +293,7 @@ function leaveCheckout() {
   <ExitIntentModal
     :open="exitOpen"
     title="¡No pierdas tu estatus de Founder!"
-    message="Estás a punto de abandonar la oferta de $297. Si sales, el precio volverá a $990 y perderás los bonos de por vida."
+    message="Estás a punto de abandonar la oferta de $1. Si sales, el precio volverá a $990 y perderás los bonos de por vida."
     @close="stayOnCheckout"
     @stay="stayOnCheckout"
     @leave="leaveCheckout"
