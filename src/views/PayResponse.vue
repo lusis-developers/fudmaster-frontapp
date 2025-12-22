@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import PayphoneService from '@/services/payphone.service'
-import usersService, { type RegisterFromPaymentBody, type RegisterFromPaymentResponse } from '@/services/users.service'
+import paymentService from '@/services/payment.service'
 import { useCheckoutStore } from '@/stores/checkout'
 import { useUserStore } from '@/stores/user'
 import { track, sendEvent } from '@/services/facebook.service'
@@ -19,6 +18,8 @@ const clientTransactionId = ref('')
 const user = ref<{ name?: string; email?: string } | null>(null)
 const checkoutStore = useCheckoutStore()
 
+const isConfirming = ref(false)
+
 function goLogin() {
   const email = user.value?.email || ''
   router.push({ path: '/login', query: { msg: 'Revisa tu correo para activar/ver tu cuenta.', email } })
@@ -32,77 +33,67 @@ onMounted(async () => {
   const id = (route.query.id as string) || ''
   const ctId = (route.query.clientTransactionId as string) || ''
 
-  transactionId.value = id
-  clientTransactionId.value = ctId
-
-  checkoutStore.hydrate()
-  user.value = { name: checkoutStore.name, email: checkoutStore.email }
-
   if (!id || !ctId) {
-    error.value = 'Parámetros inválidos en la respuesta de pago.'
+    error.value = 'Enlace de pago inválido (faltan parámetros).'
     loading.value = false
     return
   }
 
+  if (isConfirming.value) {
+    console.warn('⚠️ Evitando doble confirmación')
+    return
+  }
+  isConfirming.value = true
+
+  transactionId.value = id
+  clientTransactionId.value = ctId
+
+  checkoutStore.hydrate()
+  user.value = { name: checkoutStore.name || '', email: checkoutStore.email || '' }
+
   try {
-    const res = await PayphoneService.confirmPayment(id, ctId)
-    status.value = res.transactionStatus
-    if (status.value === 'Approved') {
-      const resAny: any = res as any
-      const refStr: string = String(resAny.reference || '')
-      const parts = refStr.split(' - ').map(s => s.trim()).filter(Boolean)
-      const refName = parts.length >= 3 ? parts[parts.length - 2] : undefined
-      const refEmail = parts.length >= 2 ? parts[parts.length - 1] : undefined
+    console.log('🚀 Iniciando confirmación en Backend...', { id, ctId })
 
-      const finalEmail = String(user.value?.email || resAny.email || refEmail || 'sin-correo@fudmaster.com')
-      const finalName = String(user.value?.name || refName || 'Usuario Fudmaster')
+    // Pass '0' if no user logged in (backend handles creation/lookup)
+    const userId = userStore.id || '0'
 
-      const info = {
-        name: finalName,
-        email: finalEmail,
-        plan: 'Expert Annual',
-        transactionId: res.transactionId,
-        clientTransactionId: res.clientTransactionId,
-      }
-      localStorage.setItem('user', JSON.stringify(info))
+    const { data } = await paymentService.confirmPayment(userId, id, ctId)
 
-      const amountDollars = typeof resAny.amount === 'number' ? Math.round(resAny.amount) / 100 : 199
-      const payload: RegisterFromPaymentBody = {
-        email: finalEmail,
-        transactionStatus: res.transactionStatus,
-        statusCode: 3,
-        authorizationCode: String(resAny.authorizationCode || res.transactionId),
-        transactionId: res.transactionId,
-        amount: amountDollars,
-        currency: String(resAny.currency || 'USD'),
-        reference: `Plan Expert - FM-EXPERT-ANNUAL - ${finalName} - ${finalEmail}`,
+    if (data.success) {
+      status.value = 'Approved'
+
+      const u = data.user
+      if (u) {
+        localStorage.setItem('user', JSON.stringify(u))
+
+        userStore.setUser({
+          id: u.id || u._id,
+          name: u.name,
+          email: u.email,
+          accountType: (u.account_type || u.accountType || 'expert')
+        })
+
+        user.value = { name: u.name, email: u.email }
       }
 
-      try {
-        const { data } = await usersService.registerFromPayment<RegisterFromPaymentResponse>(payload)
-        if (data?.user) {
-          localStorage.setItem('user', JSON.stringify(data.user))
-          
-          // Actualizar el store global de usuario inmediatamente
-          const u = data.user as any
-          userStore.setUser({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            accountType: (u.account_type || u.accountType || 'expert')
-          })
-        }
-        checkoutStore.clear()
-      } catch (err: any) {
-        console.error('Error registrando usuario desde pago', err)
-      }
-      track('Purchase', { value: amountDollars, currency: String(resAny.currency || 'USD'), contents: [{ id: 'FM-EXPERT-ANNUAL', quantity: 1 }] })
-      sendEvent('Purchase', { value: amountDollars, currency: String(resAny.currency || 'USD'), contents: [{ id: 'FM-EXPERT-ANNUAL', quantity: 1 }] })
+      checkoutStore.clear()
+
+      // Tracking
+      const amountDollars = 1
+      track('Purchase', { value: amountDollars, currency: 'USD', contents: [{ id: 'FM-FOUNDER-LIFETIME', quantity: 1 }] })
+      sendEvent('Purchase', { value: amountDollars, currency: 'USD', contents: [{ id: 'FM-FOUNDER-LIFETIME', quantity: 1 }] })
+
+    } else {
+      throw new Error(data.message || 'El pago fue procesado pero no aprobado.')
     }
-  } catch (e: any) {
-    error.value = e?.message || 'No se pudo confirmar el pago.'
+
+  } catch (err: any) {
+    console.error('❌ Error confirmando pago:', err)
+    status.value = 'Rejected'
+    error.value = err.response?.data?.message || err.message || 'Hubo un problema confirmando tu pago. Por favor contacta a soporte.'
   } finally {
     loading.value = false
+    // NOTE: We do not reset isConfirming to false to prevent retry loops on this view
   }
 })
 </script>
@@ -117,60 +108,55 @@ onMounted(async () => {
       <h2 class="title">Resultado del pago</h2>
 
       <div v-if="loading" class="state loading">
-        <i class="fa-solid fa-spinner fa-spin" /> Confirmando tu pago...
+        <i class="fa-solid fa-spinner fa-spin" /> 
+        <span>Verificando pago seguro...</span>
       </div>
 
       <div v-else>
-        <div v-if="error" class="state error">
-          <i class="fa-solid fa-triangle-exclamation" /> {{ error }}
+        <div v-if="error || status === 'Rejected'" class="state error">
+          <i class="fa-solid fa-circle-xmark" />
+          <div class="error-msg">
+            <span>Pago no completado</span>
+            <small>{{ error }}</small>
+          </div>
         </div>
 
-        <template v-else>
-          <div v-if="status === 'Approved'" class="state success">
+        <template v-else-if="status === 'Approved'">
+          <div class="state success">
             <i class="fa-solid fa-circle-check" />
-            <span>Pago aprobado</span>
-          </div>
-
-          <div v-else-if="status === 'Rejected'" class="state error">
-            <i class="fa-solid fa-circle-xmark" />
-            <span>Pago rechazado</span>
-          </div>
-
-          <div v-else class="state pending">
-            <i class="fa-regular fa-clock" />
-            <span>Pago pendiente</span>
+            <span>¡Pago Exitoso!</span>
           </div>
 
           <div class="details">
             <div class="row">
-              <span>ID de transacción</span>
+              <span>Referencia</span>
               <span class="mono">{{ transactionId }}</span>
             </div>
-            <div class="row">
-              <span>ID cliente</span>
-              <span class="mono">{{ clientTransactionId }}</span>
-            </div>
-            <div class="row" v-if="user">
-              <span>Usuario</span>
-              <span class="mono">{{ user?.name }} · {{ user?.email }}</span>
+            <div class="row" v-if="user?.email">
+              <span>Enviado a</span>
+              <span class="mono">{{ user.email }}</span>
             </div>
           </div>
 
           <div class="actions">
-            <button v-if="status === 'Approved'" class="cta green" @click="goLogin">
-              Ir al login
-            </button>
-            <button v-else class="cta blue" @click="goCheckout">
-              Intentar nuevamente
+            <button class="cta green" @click="goLogin">
+              Ingresar a la plataforma
             </button>
           </div>
         </template>
+
+        <div class="actions" v-if="status === 'Rejected' || error">
+          <button class="cta blue" @click="goCheckout">
+            Intentar nuevamente
+          </button>
+        </div>
       </div>
     </div>
   </div>
-  </template>
+</template>
 
 <style lang="scss" scoped>
+// ... (Tus estilos estaban bien, los mantengo igual)
 .pay-response {
   width: 100%;
   padding: 24px 16px;
@@ -186,10 +172,12 @@ onMounted(async () => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   display: grid;
   gap: 16px;
+  text-align: center;
 }
 
 .brand img {
   width: 120px;
+  margin: 0 auto;
 }
 
 .title {
@@ -199,10 +187,16 @@ onMounted(async () => {
 }
 
 .state {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
   font-weight: 600;
+  padding: 20px 0;
+
+  i {
+    font-size: 3rem;
+  }
 }
 
 .success {
@@ -213,13 +207,30 @@ onMounted(async () => {
   color: $alert-error;
 }
 
-.pending {
-  color: rgba($FUDMASTER-DARK, 0.6);
+.loading {
+  color: $FUDMASTER-BLUE;
+}
+
+.error-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  small {
+    font-weight: 400;
+    opacity: 0.8;
+  }
 }
 
 .details {
   display: grid;
   gap: 10px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  text-align: left;
 }
 
 .row {
@@ -227,10 +238,12 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   color: rgba($FUDMASTER-DARK, 0.7);
+  font-size: 0.9rem;
 }
 
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
 }
 
 .actions {
@@ -246,10 +259,16 @@ onMounted(async () => {
   gap: 10px;
   border: none;
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 14px;
   cursor: pointer;
   font-weight: 700;
   color: $white;
+  font-size: 1rem;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
 .cta.green {
@@ -262,7 +281,7 @@ onMounted(async () => {
 
 @media (min-width: 960px) {
   .card {
-    padding: 24px;
+    padding: 30px;
   }
 }
 </style>
