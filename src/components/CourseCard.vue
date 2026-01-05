@@ -83,7 +83,7 @@ function onCardClick(e: Event) {
         </div>
       </div>
     </transition>
-    <div v-if="remaining" class="countdown">
+    <div v-if="remaining && props.countdownTo" class="countdown">
       <span class="label">Disponible en:</span>
       <span class="unit">{{ String(remaining.d).padStart(2, '0') }}d</span>
       <span class="sep">:</span>

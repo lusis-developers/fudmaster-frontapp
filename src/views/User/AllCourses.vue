@@ -18,6 +18,10 @@ function isActive(course: any) {
   return !!course?.is_published
 }
 
+function isMockup(course: any) {
+  return String(course?.id || '').startsWith('mock-')
+}
+
 function truncated(text: string, limit = 140) {
   const t = (text || '').trim()
   if (t.length <= limit) return { short: t, needs: false }
@@ -139,7 +143,7 @@ window.setInterval(() => {
                 <i v-if="isActive(c)" class="fa-solid fa-arrow-right" />
               </span>
             </div>
-            <div v-if="!isActive(c)" class="countdown">
+            <div v-if="!isActive(c) && isMockup(c)" class="countdown">
               <span class="label">Disponible en:</span>
               <span class="unit">{{ String(Math.floor(((deadlines[i] ?? tick) - tick) / (1000 * 60 * 60 * 24))).padStart(2, '0') }}d</span>
               <span class="sep">:</span>
