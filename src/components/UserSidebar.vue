@@ -25,7 +25,6 @@ const careersCount = computed(() => {
 })
 
 const menu = [
-  { name: 'Inicio', link: '/', icon: 'fa-solid fa-house' },
   { name: 'Mis Cursos', link: '/courses', icon: 'fa-solid fa-book-open' },
   { name: 'Explorar', link: '/courses/all', icon: 'fa-solid fa-compass' },
   { name: 'Escuelas', link: '/careers', icon: 'fa-solid fa-graduation-cap' },
@@ -34,7 +33,9 @@ const menu = [
 ]
 
 function isSelected(link: string) {
-  return router.currentRoute.value.path === link || (link !== '/' && router.currentRoute.value.path.startsWith(link))
+  const path = router.currentRoute.value.path
+  if (link === '/courses' && path.startsWith('/courses/all')) return false
+  return path === link || (link !== '/' && path.startsWith(link))
 }
 
 function applyTheme() {
@@ -44,8 +45,8 @@ function applyTheme() {
 function toggleTheme() { isDark.value = !isDark.value; localStorage.setItem('theme', isDark.value ? 'dark' : 'light'); applyTheme() }
 onMounted(async () => {
   const t = localStorage.getItem('theme'); isDark.value = t === 'dark'; applyTheme()
-  try { await careersStore.fetchAll() } catch {}
-  try { userStore.hydrate(); const uid = userStore.id || localStorage.getItem('user_id'); if (uid) await coursesStore.fetchEnrolled(String(uid)) } catch {}
+  try { await careersStore.fetchAll() } catch { }
+  try { userStore.hydrate(); const uid = userStore.id || localStorage.getItem('user_id'); if (uid) await coursesStore.fetchEnrolled(String(uid)) } catch { }
 })
 </script>
 
@@ -89,7 +90,7 @@ onMounted(async () => {
 
     &.active {
       width: 64px;
-      
+
       .user-sidebar-footer {
         padding: 8px;
         align-items: center;
