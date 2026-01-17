@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import thumbnailSrc from '@/assets/statis/nicole-landing/nicole-vsl.png'
+import thumbnailSrc from '@/assets/statis/nicole-landing/nicole-vsl.jpeg'
 
 const router = useRouter()
 function goToCheckout() { router.push('/checkout') }
@@ -140,6 +140,9 @@ function loadVideo() {
 
   .play-button {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 80px;
     height: 80px;
     background-color: rgba(233, 30, 99, 0.9);
