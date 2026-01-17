@@ -22,5 +22,8 @@ export default defineConfig({
   },
   server: {
     allowedHosts: ['fudmaster-testing-frontend.fudmaster.com.ec']
+  },
+  build: {
+    target: 'esnext'
   }
 })
