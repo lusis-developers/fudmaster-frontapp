@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import thumbnailSrc from '@/assets/statis/nicole-landing/nicole-vsl.png'
 
 const router = useRouter()
 function goToCheckout() { router.push('/checkout') }
 
-onMounted(() => {
+const isVideoLoaded = ref(false)
+
+function loadVideo() {
+  if (isVideoLoaded.value) return
+  isVideoLoaded.value = true
+
+  // Cargar scripts de Wistia dinámicamente solo al interactuar
   if (!document.getElementById('wistia-player-js')) {
     const script1 = document.createElement('script')
     script1.src = "https://fast.wistia.com/player.js"
@@ -22,7 +29,7 @@ onMounted(() => {
     script2.id = 'wistia-embed-js'
     document.head.appendChild(script2)
   }
-})
+}
 </script>
 
 <template>
@@ -32,8 +39,21 @@ onMounted(() => {
       <div class="vsl-split-layout">
         
         <div class="vsl-video-column">
-          <div class="video-frame">
-            <wistia-player media-id="2f09oyiyxq" aspect="1.7777777777777777"></wistia-player>
+          <div class="video-frame" @click="loadVideo">
+            <div v-if="!isVideoLoaded" class="video-facade">
+              <img 
+                :src="thumbnailSrc"
+                alt="Video Thumbnail" 
+                class="video-thumbnail"
+                fetchpriority="high"
+                width="960"
+                height="540"
+              >
+              <div class="play-button">
+                <i class="fa-solid fa-play"></i>
+              </div>
+            </div>
+            <wistia-player v-else media-id="2f09oyiyxq" aspect="1.7777777777777777"></wistia-player>
           </div>
         </div>
 
@@ -74,7 +94,8 @@ onMounted(() => {
     background-color: $FUDMASTER-PRIMARY;
     // min-height: 100vh; /* Ocupa toda la pantalla */
     display: flex;
-    align-items: center; /* Centra verticalmente todo el bloque */
+    align-items: center;
+    /* Centra verticalmente todo el bloque */
     justify-content: center;
     padding: 48px 20px;
     position: relative;
@@ -92,44 +113,70 @@ onMounted(() => {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: 40px; /* Espacio entre video y texto */
+    gap: 40px;
+    /* Espacio entre video y texto */
   }
 
-  /* --- COLUMNA VIDEO --- */
-  &-video-column {
-    flex: 1.2; /* El video ocupa un poco más de espacio (60% aprox) */
-    width: 100%;
-  }
 
-  .video-frame {
+  .video-facade {
     position: relative;
-    /* padding-bottom: 56.25%; Aspect Ratio 16:9 - Removed as Wistia Player handles it */
-    height: auto;
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    background: #000;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  
-  wistia-player[media-id='2f09oyiyxq']:not(:defined) {
-    background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/2f09oyiyxq/swatch');
-    display: block;
-    filter: blur(5px);
-    padding-top: 56.25%;
+
+  .video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Evita que se estire */
+    filter: blur(3px);
+    /* Efecto borroso solicitado */
+    transform: scale(1.02);
+    /* Escalar un poco para evitar bordes blancos por el blur */
+  }
+
+  .play-button {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background-color: rgba(233, 30, 99, 0.9);
+    /* $FUDMASTER-PINK aprox */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, background-color 0.2s;
+    pointer-events: none;
+    /* Dejar pasar el clic al contenedor */
+  }
+
+  .video-frame:hover .play-button {
+    transform: scale(1.1);
+    background-color: rgb(233, 30, 99);
   }
 
   /* --- COLUMNA TEXTO --- */
   &-content-column {
-    flex: 0.8; /* El texto ocupa un poco menos (40% aprox) */
+    flex: 0.8;
+    /* El texto ocupa un poco menos (40% aprox) */
     color: $FUDMASTER-LIGHT;
-    text-align: right; /* Alineado a la derecha como en la referencia */
+    text-align: right;
+    /* Alineado a la derecha como en la referencia */
     display: flex;
     flex-direction: column;
-    align-items: flex-end; /* Fuerza los elementos a la derecha */
+    align-items: flex-end;
+    /* Fuerza los elementos a la derecha */
   }
 
   &-title {
-    font-size: 2.5rem; /* Tamaño grande */
+    font-size: 2.5rem;
+    /* Tamaño grande */
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 25px;
@@ -141,13 +188,15 @@ onMounted(() => {
     line-height: 1.5;
     margin-bottom: 40px;
     opacity: 0.9;
-    max-width: 400px; /* Evita que el texto sea muy ancho */
+    max-width: 400px;
+    /* Evita que el texto sea muy ancho */
   }
 
   .cta-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-end; /* Alinea botón y subtitulo a la derecha */
+    align-items: flex-end;
+    /* Alinea botón y subtitulo a la derecha */
   }
 }
 
@@ -191,12 +240,14 @@ onMounted(() => {
 /* --- RESPONSIVE MOBILE --- */
 @media (max-width: 960px) {
   .vsl-split-layout {
-    flex-direction: column; /* Apila Video arriba, Texto abajo */
+    flex-direction: column;
+    /* Apila Video arriba, Texto abajo */
     gap: 40px;
   }
 
   .vsl-content-column {
-    text-align: center; /* Centrar texto en móvil */
+    text-align: center;
+    /* Centrar texto en móvil */
     align-items: center;
     padding: 0 10px;
   }
