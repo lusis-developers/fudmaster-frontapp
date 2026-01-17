@@ -2,6 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useUserStore } from '@/stores/user'
+import { loadThirdPartyScripts } from '@/utils/thirdPartyScripts'
 
 useHead({
   title: 'Fudmaster | lleva tu cocina al siguiente nivel',
@@ -60,6 +61,9 @@ onMounted(() => {
   if (userStore.isAuthenticated && userStore.id) {
     userStore.fetchUser(userStore.id)
   }
+
+  // Load analytics and third-party scripts with delay
+  loadThirdPartyScripts()
 })
 </script>
 
