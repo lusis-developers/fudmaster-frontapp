@@ -5,6 +5,7 @@ import UserLayout from "../layout/UserLayout.vue";
 import PublicLayout from "../layout/PublicLayout.vue";
 
 // Views
+import UserDashboard from "../views/User/UserDashboard.vue";
 import MyCourses from "../views/User/MyCourses.vue";
 import AllCourses from "../views/User/AllCourses.vue";
 import CourseDetail from "../views/User/CourseDetail.vue";
@@ -33,7 +34,12 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        redirect: '/courses'
+        redirect: '/dashboard'
+      },
+      {
+        path: 'dashboard',
+        component: UserDashboard,
+        meta: { title: 'Dashboard', requiresAuth: true }
       },
       {
         path: 'courses',
