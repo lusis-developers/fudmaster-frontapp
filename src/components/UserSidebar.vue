@@ -25,6 +25,7 @@ const careersCount = computed(() => {
 })
 
 const menu = [
+  { name: 'Inicio', link: '/dashboard', icon: 'fa-solid fa-house' },
   { name: 'Mis Cursos', link: '/courses', icon: 'fa-solid fa-book-open' },
   { name: 'Explorar', link: '/courses/all', icon: 'fa-solid fa-compass' },
   { name: 'Escuelas', link: '/careers', icon: 'fa-solid fa-graduation-cap' },

@@ -82,7 +82,13 @@ function onTokenExpired() {
 
 async function logout() {
   await usersService.logout()
+  userStore.clear() // Clear Pinia state
   isLoggedIn.value = false
+  // router.push('/login') // usersService.logout usually handles redirect or we do it here?
+  // Current logic just sets isLoggedIn=false.
+  // The watcher on isLoggedIn might handle it?
+  // watch(isLoggedIn, (val) => { if (val) fetchPoints(); else gamificationStore.reset() })
+  router.push('/login')
 }
 
 function confirmLogout() {
@@ -111,7 +117,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('auth:token-expired', onTokenExpired as EventListener)
   window.removeEventListener('gamification:points-refresh', fetchPoints as EventListener)
   window.removeEventListener('comments:created', fetchPoints as EventListener)
-  try { themeObserver?.disconnect() } catch {}
+  try { themeObserver?.disconnect() } catch { }
 })
 
 watch(isLoggedIn, (val) => { if (val) fetchPoints(); else gamificationStore.reset() })
@@ -243,8 +249,10 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else gamificationStore.rese
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(255, 165, 0, 0.4);
           }
-          
-          i { font-size: 14px; }
+
+          i {
+            font-size: 14px;
+          }
         }
 
         .user-pill {
@@ -283,9 +291,18 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else gamificationStore.rese
         }
 
         @keyframes points-gain {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.2); background: $FUDMASTER-GREEN; }
-          100% { transform: scale(1); }
+          0% {
+            transform: scale(1);
+          }
+
+          50% {
+            transform: scale(1.2);
+            background: $FUDMASTER-GREEN;
+          }
+
+          100% {
+            transform: scale(1);
+          }
         }
 
         .logout-button {
@@ -339,6 +356,7 @@ watch(isLoggedIn, (val) => { if (val) fetchPoints(); else gamificationStore.rese
   .user-header-wrapper-right .upgrade-btn span {
     display: none;
   }
+
   .user-header-wrapper-right .upgrade-btn {
     padding: 8px;
     border-radius: 50%;

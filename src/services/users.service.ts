@@ -53,6 +53,17 @@ export interface UpdateUserBody {
   heardAboutUsOther?: string | null
 }
 
+export interface OnboardingBody {
+  jobPosition?: string
+  businessName?: string
+  businessType?: string
+  businessTypeOther?: string
+  employeeCount?: string
+  numberOfLocations?: number
+  heardAboutUs?: string
+  heardAboutUsOther?: string
+}
+
 export interface CourseAccess {
   teachableCourseId: number
   status: 'active' | 'revoked'
@@ -165,7 +176,7 @@ class UsersService extends APIBase {
     localStorage.removeItem('access_token')
     try {
       window.dispatchEvent(new Event('auth:token-expired'))
-    } catch {}
+    } catch { }
   }
 
   async registerFromPayment<T = RegisterFromPaymentResponse>(body: RegisterFromPaymentBody, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
@@ -194,6 +205,10 @@ class UsersService extends APIBase {
 
   async resetPassword<T = ResetPasswordResponse>(body: ResetPasswordBody): Promise<AxiosResponse<T>> {
     return this.post<T>('users/reset-password', body)
+  }
+
+  async submitOnboarding<T = { message: string, user: SafeUser }>(userId: string | number, body: OnboardingBody): Promise<AxiosResponse<T>> {
+    return this.patch<T>(`users/${userId}/onboarding`, body)
   }
 }
 

@@ -25,6 +25,7 @@ export interface UserState {
 	heardAboutUsOther?: string | null;
 	points?: number | null;
 	accountType: AccountType | null;
+	onboardingCompleted?: boolean | null;
 }
 
 export const useUserStore = defineStore("user", {
@@ -41,6 +42,7 @@ export const useUserStore = defineStore("user", {
 		heardAboutUsOther: null,
 		points: null,
 		accountType: null,
+		onboardingCompleted: null,
 	}),
 	actions: {
 		hydrate() {
@@ -48,10 +50,12 @@ export const useUserStore = defineStore("user", {
 			const id = localStorage.getItem("user_id");
 			const t = localStorage.getItem("teachable_user_id");
 			const at = localStorage.getItem("user_account_type"); // Recuperar accountType
+			const oc = localStorage.getItem("onboarding_completed");
 			this.isAuthenticated = !!token;
 			this.id = id || null;
 			this.teachableUserId = t || null;
 			this.accountType = (at as AccountType) || null;
+			this.onboardingCompleted = oc === "true" ? true : oc === "false" ? false : null;
 		},
 		setUser(payload: {
 			id?: string | number;
@@ -59,12 +63,13 @@ export const useUserStore = defineStore("user", {
 			email?: string;
 			teachableUserId?: string | number;
 			accountType?: AccountType;
+			onboardingCompleted?: boolean;
 		}) {
 			if (payload?.id !== undefined && payload?.id !== null) {
 				this.id = payload.id;
 				try {
 					localStorage.setItem("user_id", String(payload.id));
-				} catch {}
+				} catch { }
 			}
 			if (payload?.name) this.name = payload.name;
 			if (payload?.email) this.email = payload.email;
@@ -78,13 +83,19 @@ export const useUserStore = defineStore("user", {
 						"teachable_user_id",
 						String(payload.teachableUserId)
 					);
-				} catch {}
+				} catch { }
 			}
 			if (payload?.accountType) {
 				this.accountType = payload.accountType;
 				try {
 					localStorage.setItem("user_account_type", payload.accountType);
-				} catch {}
+				} catch { }
+			}
+			if (payload?.onboardingCompleted !== undefined) {
+				this.onboardingCompleted = payload.onboardingCompleted;
+				try {
+					localStorage.setItem("onboarding_completed", String(payload.onboardingCompleted));
+				} catch { }
 			}
 			this.isAuthenticated = true;
 		},
@@ -101,18 +112,22 @@ export const useUserStore = defineStore("user", {
 			this.heardAboutUsOther = null;
 			this.points = null;
 			this.accountType = null;
+			this.onboardingCompleted = null;
 			try {
 				localStorage.removeItem("user_id");
-			} catch {}
+			} catch { }
 			try {
 				localStorage.removeItem("teachable_user_id");
-			} catch {}
+			} catch { }
 			try {
 				localStorage.removeItem("user_account_type");
-			} catch {}
+			} catch { }
 			try {
 				localStorage.removeItem("user_plan"); // Limpiar legacy
-			} catch {}
+			} catch { }
+			try {
+				localStorage.removeItem("onboarding_completed");
+			} catch { }
 		},
 		async updateById(
 			userId: string | number,
@@ -133,13 +148,13 @@ export const useUserStore = defineStore("user", {
 							"teachable_user_id",
 							String(u.teachableUserId)
 						);
-				} catch {}
+				} catch { }
 			}
 			if (u.accountType) {
 				this.accountType = u.accountType;
 				try {
 					localStorage.setItem("user_account_type", u.accountType);
-				} catch {}
+				} catch { }
 			}
 			this.gender = u.gender;
 			this.genderOther = u.genderOther;
@@ -148,6 +163,12 @@ export const useUserStore = defineStore("user", {
 			this.heardAboutUsOther = u.heardAboutUsOther;
 			this.points =
 				typeof u.points === "number" ? u.points : this.points ?? null;
+			if ((u as any).onboardingCompleted !== undefined) {
+				this.onboardingCompleted = (u as any).onboardingCompleted;
+				try {
+					localStorage.setItem("onboarding_completed", String(this.onboardingCompleted));
+				} catch { }
+			}
 			return data;
 		},
 		async changePassword(
@@ -189,6 +210,7 @@ export const useUserStore = defineStore("user", {
 					email: u.email,
 					teachableUserId: u.teachableUserId,
 					accountType: u.accountType,
+					onboardingCompleted: (u as any).onboardingCompleted,
 				});
 				// Actualizar campos adicionales que no están en setUser
 				this.gender = u.gender;

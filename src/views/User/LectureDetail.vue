@@ -10,6 +10,7 @@ import CommentsThread from '@/components/CommentsThread.vue'
 import LectureVideoPlayer from '@/components/lecture/LectureVideoPlayer.vue'
 import LectureAttachments from '@/components/lecture/LectureAttachments.vue'
 import LectureTabs from '@/components/lecture/LectureTabs.vue'
+import PlaylistSidebar from '@/components/lecture/PlaylistSidebar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -201,47 +202,61 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
       <div v-else-if="!store.currentLecture" class="empty"><i class="fa-regular fa-face-meh" /> No se encontró la clase.</div>
 
       <div v-else class="lesson-layout">
-        <div class="left">
+        <!-- Main Content (Video, Tabs, Comments) -->
+        <div class="main-content">
           <div class="player-wrap">
             <LectureVideoPlayer :key="currentUrl" :video-url="currentUrl" />
           </div>
+          
+          <div class="next-panel-wrapper">
+             <div v-if="nextLecture" class="next-panel">
+                <div class="next-head">
+                  <h3 class="next-title"><i class="fa-solid fa-forward" /> Siguiente clase</h3>
+                  <p class="next-meta">{{ nextLecture.name || `Lección ${nextLecture.position}` }}</p>
+                </div>
+                <div class="next-actions">
+                  <button class="next-cta" type="button" :disabled="completing" @click="goToNext('global')">
+                    <i :class="completing ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-check'" />
+                    {{ completing ? 'Procesando...' : 'Completar y Continuar' }}
+                  </button>
+                </div>
+                <div v-if="completeError" class="next-error"><i class="fa-solid fa-triangle-exclamation" /> {{ completeError }}</div>
+                <div v-else-if="completeSuccess" class="next-success"><i class="fa-solid fa-check" /> {{ completeSuccess }}</div>
+            </div>
+             <div v-else class="next-panel">
+                <div class="next-head">
+                  <h3 class="next-title"><i class="fa-solid fa-clipboard-check" /> Quiz final</h3>
+                  <p class="next-meta">Has llegado al final del curso.</p>
+                </div>
+                <div class="next-actions">
+                  <button class="next-cta" type="button" :disabled="quizzesStore.loading || checkingQuiz" @click="startQuiz">
+                    <i :class="(quizzesStore.loading || checkingQuiz) ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
+                    {{ (quizzesStore.loading || checkingQuiz) ? 'Cargando...' : 'Iniciar quiz' }}
+                  </button>
+                </div>
+              </div>
+          </div>
+
           <LectureTabs :description="store.currentLecture?.description || store.currentLecture?.heading" :has-resources="Array.isArray(store.currentLecture?.attachments) && store.currentLecture.attachments.length > 0">
             <template #resources>
               <LectureAttachments v-if="Array.isArray(store.currentLecture?.attachments) && store.currentLecture.attachments.length" :attachments="store.currentLecture.attachments" />
             </template>
           </LectureTabs>
-          <div v-if="nextLecture" class="next-panel">
-            <div class="next-head">
-              <h3 class="next-title"><i class="fa-solid fa-forward" /> Siguiente clase</h3>
-              <p class="next-meta">{{ nextLecture.name || `Lección ${nextLecture.position}` }}</p>
-            </div>
-            <div class="next-actions">
-              <button class="next-cta" type="button" :disabled="completing" @click="goToNext('global')">
-                <i :class="completing ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-check'" />
-                {{ completing ? 'Procesando...' : 'Continuar' }}
-              </button>
-            </div>
-            <div v-if="completeError" class="next-error"><i class="fa-solid fa-triangle-exclamation" /> {{ completeError }}</div>
-            <div v-else-if="completeSuccess" class="next-success"><i class="fa-solid fa-check" /> {{ completeSuccess }}</div>
+
+          <div class="comments-section">
+            <CommentsThread :course-id="Number(courseId)" :lecture-id="Number(lectureId)" :show-title="true" />
           </div>
-          <div v-else class="next-panel">
-            <div class="next-head">
-              <h3 class="next-title"><i class="fa-solid fa-clipboard-check" /> Quiz final</h3>
-              <p class="next-meta">Has llegado al final del curso.</p>
-            </div>
-            <div class="next-actions">
-              <button class="next-cta" type="button" :disabled="quizzesStore.loading || checkingQuiz" @click="startQuiz">
-                <i :class="(quizzesStore.loading || checkingQuiz) ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-list-check'" />
-                {{ (quizzesStore.loading || checkingQuiz) ? 'Cargando...' : 'Iniciar quiz' }}
-              </button>
-            </div>
-          </div>
-          
         </div>
-        <div class="right">
-          <aside class="comments-sidebar">
-            <CommentsThread :course-id="Number(courseId)" :lecture-id="Number(lectureId)" :show-title="false" />
-          </aside>
+
+        <!-- Sidebar Content (Playlist) -->
+        <div class="sidebar-content">
+           <PlaylistSidebar 
+              class="sticky-playlist"
+              :sections="store.currentCourse?.lecture_sections || []" 
+              :course-id="Number(courseId)" 
+              :current-lecture-id="Number(lectureId)"
+              :completed-lecture-ids="store.progress.completedLectureIds" 
+            />
         </div>
       </div>
     </div>
@@ -267,35 +282,34 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
 }
 
 .container {
-  max-width: 100%;
+  max-width: 1600px;
   margin: 0 auto;
   display: grid;
   gap: 16px;
 }
 
-.progress { display: grid; gap: 6px; }
-.progress-bar { height: 8px; background: var(--accent); width: 0%; transition: width 0.3s ease; border-radius: 999px; }
-.progress-meta { color: color-mix(in oklab, var(--text), transparent 40%); font-size: 12px; }
-
-.next-error {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: $alert-error;
-  font-size: 13px;
+.progress {
+  display: grid;
+  gap: 6px;
 }
 
-.next-success {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: $FUDMASTER-GREEN;
-  font-size: 13px;
+.progress-bar {
+  height: 8px;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 999px;
+}
+
+.progress-meta {
+  color: color-mix(in oklab, var(--text), transparent 40%);
+  font-size: 12px;
 }
 
 .header {
   display: grid;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
 .back {
@@ -343,100 +357,156 @@ watch(progressPercent, (p) => { try { console.log('[LectureDetail] progressPerce
   border-color: rgba($alert-error, 0.3);
 }
 
+/* Layout System */
 .lesson-layout {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1024px) {
   .lesson-layout {
-    grid-template-columns: 1.4fr 1fr;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    /* Video takes remaining space, Playlist fixed width */
+    align-items: start;
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   .lesson-layout {
-    grid-template-columns: 1.8fr 1fr;
+    grid-template-columns: 1fr 380px;
   }
 }
 
-.left {
+/* Main Content Area */
+.main-content {
   display: grid;
-  gap: 16px;
-}
-
-.right {
-  display: grid;
-  gap: 16px;
+  gap: 24px;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .player-wrap {
-  background: var(--bg);
+  background: #000;
   border-radius: 12px;
-  box-shadow: 0 20px 40px -10px rgba($FUDMASTER-DARK, 0.1);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  aspect-ratio: 16/9;
 }
 
+/* Next Panel */
 .next-panel {
-  background: var(--bg);
+  background: color-mix(in oklab, var(--bg), var(--text) 2%);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px;
-  display: grid;
-  gap: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .next-head {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .next-title {
   color: var(--text);
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .next-meta {
-  color: color-mix(in oklab, var(--text), transparent 60%);
+  color: color-mix(in oklab, var(--text), transparent 40%);
   margin: 0;
   font-size: 14px;
 }
 
 .next-actions {
-  display: flex;
-  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .next-cta {
-  background: $FUDMASTER-PINK;
-  color: $white;
+  background: var(--accent);
+  color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 10px 16px;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
 }
 
-.next-cta:hover {
-  filter: brightness(0.95);
+.next-error {
+  color: $alert-error;
+  font-size: 13px;
+  margin-top: 8px;
 }
 
+.next-success {
+  color: #10b981;
+  font-size: 13px;
+  margin-top: 8px;
+}
 
-.comments-sidebar {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
+/* Comments Section Wrapper */
+.comments-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+/* Sidebar */
+.sidebar-content {
   display: grid;
-  gap: 10px;
+  gap: 16px;
+}
+
+.sticky-playlist {
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 1023px) {
+  .sticky-playlist {
+    position: static;
+  }
+
+  .next-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .next-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .next-cta {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

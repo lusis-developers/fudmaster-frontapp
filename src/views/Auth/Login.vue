@@ -31,36 +31,36 @@ function togglePassword() {
 async function loginWithGoogle() {
   loadingGoogle.value = true
   error.value = ''
-  
+
   try {
     // 1. Abrir Popup de Google
     const result = await signInWithPopup(auth, provider)
     const user = result.user
-    
+
     // 2. Obtener Token (Este token se enviará al Backend luego)
     const token = await user.getIdToken()
-    
+
     console.log('🚀 Google User:', user)
     console.log('🔐 Firebase ID Token:', token)
-    
+
     // 3. Enviar token al Backend para validar y crear sesión
     const { data } = await usersService.googleLogin<LoginResponse>(token)
-    
+
     // 4. Guardar sesión y redirigir (Igual que en login normal)
     localStorage.setItem('access_token', data.token)
-    
+
     try {
       // Manejo flexible de IDs según vengan del backend (_id, id, user_id)
       const uid = (data.user as any)?.id || (data.user as any)?._id || (data.user as any)?.user_id
-      
+
       if (uid) {
         localStorage.setItem('user_id', String(uid))
-        
+
         // 5. RE-FETCH: Obtener perfil completo y fresco para asegurar accountType (Founder, etc.)
         try {
           const { data: userData } = await usersService.getById(uid)
           const freshUser = userData.user
-          
+
           localStorage.setItem('user', JSON.stringify(freshUser))
           userStore.setUser({
             id: freshUser._id || (freshUser as any).id,
@@ -71,19 +71,19 @@ async function loginWithGoogle() {
         } catch (fetchErr) {
           console.warn('Error refrescando perfil post-login:', fetchErr)
           // Fallback al usuario que vino en login
-          userStore.setUser({ 
-            id: uid, 
-            name: (data.user as any)?.name, 
-            email: (data.user as any)?.email 
+          userStore.setUser({
+            id: uid,
+            name: (data.user as any)?.name,
+            email: (data.user as any)?.email
           })
         }
       }
     } catch (err) {
       console.warn('Error parseando usuario:', err)
     }
-    
+
     router.push('/')
-    
+
   } catch (e: any) {
     console.error('Error Google Login:', e)
     if (e.code === 'auth/popup-closed-by-user') {
@@ -91,10 +91,10 @@ async function loginWithGoogle() {
       return
     }
     // Si el error viene del backend (axios)
-    if (e.message && !e.code) { 
-         error.value = e.message
+    if (e.message && !e.code) {
+      error.value = e.message
     } else {
-         error.value = 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.'
+      error.value = 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.'
     }
   } finally {
     loadingGoogle.value = false
@@ -105,41 +105,42 @@ async function submit() {
   if (!email.value || !password.value) return
   loading.value = true
   error.value = ''
-  
+
   try {
     const body: LoginBody = { email: email.value.trim().toLowerCase(), password: password.value.trim() }
     const { data } = await usersService.login<LoginResponse>(body)
-    
+
     localStorage.setItem('access_token', data.token)
     try {
       const uid = (data.user as any)?.id || (data.user as any)?._id || (data.user as any)?.user_id
-      
+
       if (uid) {
         localStorage.setItem('user_id', String(uid))
-        
+
         // RE-FETCH: Asegurar perfil fresco
         try {
           const { data: userData } = await usersService.getById(uid)
           const freshUser = userData.user
-          
+
           localStorage.setItem('user', JSON.stringify(freshUser))
           userStore.setUser({
             id: freshUser._id || (freshUser as any).id,
             name: freshUser.name,
             email: freshUser.email,
-            accountType: freshUser.accountType || (freshUser as any).account_type
+            accountType: freshUser.accountType || (freshUser as any).account_type,
+            onboardingCompleted: (freshUser as any).onboardingCompleted
           })
         } catch (fetchErr) {
           console.warn('Error refrescando perfil submit:', fetchErr)
-          userStore.setUser({ 
-            id: uid, 
-            name: (data.user as any)?.name, 
-            email: (data.user as any)?.email 
+          userStore.setUser({
+            id: uid,
+            name: (data.user as any)?.name,
+            email: (data.user as any)?.email
           })
         }
       }
-    } catch {}
-    
+    } catch { }
+
     router.push('/')
   } catch (e: any) {
     error.value = e?.message || 'Credenciales incorrectas. Intenta de nuevo.'
@@ -245,8 +246,8 @@ $white: #ffffff;
 $alert-error: #ef4444;
 $alert-info: #3b82f6;
 
-.login-page { 
-  width: 100%; 
+.login-page {
+  width: 100%;
   min-height: 100vh;
   padding: 40px 16px;
   background-color: $FUDMASTER-LIGHT; // Fondo de página claro
@@ -259,6 +260,7 @@ $alert-info: #3b82f6;
 
 .brand-header {
   text-align: center;
+
   .logo {
     height: 48px;
     width: auto;
@@ -303,13 +305,13 @@ $alert-info: #3b82f6;
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;
-  
+
   &.error {
     background: rgba($alert-error, 0.1);
     color: $alert-error;
     border: 1px solid rgba($alert-error, 0.2);
   }
-  
+
   &.info {
     background: rgba($alert-info, 0.1);
     color: $alert-info;
@@ -317,13 +319,16 @@ $alert-info: #3b82f6;
   }
 }
 
-.form { display: grid; gap: 20px; }
+.form {
+  display: grid;
+  gap: 20px;
+}
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
+
   label {
     font-size: 14px;
     font-weight: 600;
@@ -342,8 +347,10 @@ $alert-info: #3b82f6;
   color: $FUDMASTER-BLUE;
   text-decoration: none;
   font-weight: 500;
-  
-  &:hover { text-decoration: underline; }
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .input-wrapper {
@@ -355,18 +362,18 @@ $alert-info: #3b82f6;
   border-radius: 12px;
   padding: 12px 16px;
   transition: all 0.2s ease;
-  
+
   &:focus-within {
     background: $white;
     border-color: $FUDMASTER-BLUE;
     box-shadow: 0 0 0 4px rgba($FUDMASTER-BLUE, 0.1);
   }
-  
+
   .icon {
     color: rgba($FUDMASTER-DARK, 0.5);
     font-size: 18px;
   }
-  
+
   input {
     flex: 1;
     border: none;
@@ -374,10 +381,12 @@ $alert-info: #3b82f6;
     outline: none;
     font-size: 16px;
     color: $FUDMASTER-DARK;
-    
-    &::placeholder { color: rgba($FUDMASTER-DARK, 0.3); }
+
+    &::placeholder {
+      color: rgba($FUDMASTER-DARK, 0.3);
+    }
   }
-  
+
   .eye-btn {
     background: none;
     border: none;
@@ -385,8 +394,10 @@ $alert-info: #3b82f6;
     cursor: pointer;
     color: rgba($FUDMASTER-DARK, 0.4);
     transition: color 0.2s;
-    
-    &:hover { color: $FUDMASTER-DARK; }
+
+    &:hover {
+      color: $FUDMASTER-DARK;
+    }
   }
 }
 
@@ -406,13 +417,16 @@ $alert-info: #3b82f6;
   justify-content: center;
   gap: 10px;
   transition: transform 0.2s;
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px -5px rgba($FUDMASTER-DARK, 0.3);
   }
-  
-  &:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 }
 
 .divider {
@@ -421,14 +435,15 @@ $alert-info: #3b82f6;
   justify-content: center;
   margin: 20px 0;
   width: 100%;
-  
-  &::before, &::after {
+
+  &::before,
+  &::after {
     content: '';
     flex: 1;
     height: 1px;
     background: rgba($FUDMASTER-DARK, 0.1);
   }
-  
+
   span {
     padding: 0 10px;
     color: rgba($FUDMASTER-DARK, 0.5);
@@ -452,19 +467,19 @@ $alert-info: #3b82f6;
   justify-content: center;
   gap: 12px;
   transition: all 0.2s;
-  
+
   &:hover:not(:disabled) {
     background: #f8f9fa;
     border-color: rgba($FUDMASTER-DARK, 0.4);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
-  
+
   .icon {
     font-size: 18px;
     // Color oficial de Google si se desea, o mantener minimalista
@@ -482,12 +497,12 @@ $alert-info: #3b82f6;
   align-items: center;
   gap: 10px;
   text-align: center;
-  
+
   .hint {
     font-size: 14px;
     color: rgba($FUDMASTER-DARK, 0.6);
   }
-  
+
   .buy-btn {
     background: transparent;
     border: 2px solid $FUDMASTER-GREEN; // Borde verde para llamar atención sin ser agresivo
@@ -498,7 +513,7 @@ $alert-info: #3b82f6;
     cursor: pointer;
     transition: all 0.2s;
     font-size: 14px;
-    
+
     &:hover {
       background: $FUDMASTER-GREEN;
       color: $white;
@@ -512,7 +527,14 @@ $alert-info: #3b82f6;
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

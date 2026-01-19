@@ -5,6 +5,7 @@ import UserLayout from "../layout/UserLayout.vue";
 import PublicLayout from "../layout/PublicLayout.vue";
 
 // Views
+import UserDashboard from "../views/User/UserDashboard.vue";
 import MyCourses from "../views/User/MyCourses.vue";
 import AllCourses from "../views/User/AllCourses.vue";
 import CourseDetail from "../views/User/CourseDetail.vue";
@@ -12,6 +13,8 @@ import LectureDetail from "../views/User/LectureDetail.vue";
 import QuizView from "../views/User/QuizView.vue";
 import QuizResult from "../views/User/QuizResult.vue";
 import CertificatesView from "../views/User/CertificatesView.vue";
+import ProfileEdit from "../views/User/ProfileEdit.vue";
+// import UserOnboarding from "../views/User/UserOnboarding.vue";
 
 // Landingpage
 import NicoleLanding from "../views/Landing/NicoleLanding.vue";
@@ -20,7 +23,6 @@ import Checkout from "../views/Checkout.vue";
 import PayResponse from "../views/PayResponse.vue";
 import Careers from "../views/Careers.vue";
 import CareerDetail from "../views/CareerDetail.vue";
-import ProfileEdit from "../views/User/ProfileEdit.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -33,7 +35,12 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        redirect: '/courses'
+        redirect: '/dashboard'
+      },
+      {
+        path: 'dashboard',
+        component: UserDashboard,
+        meta: { title: 'Dashboard', requiresAuth: true }
       },
       {
         path: 'courses',
@@ -44,56 +51,47 @@ const routes: Array<RouteRecordRaw> = [
         path: 'courses/all',
         component: AllCourses,
         meta: { title: 'Todos los cursos', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'courses/:id',
         component: CourseDetail,
         meta: { title: 'Detalle de curso', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'courses/:id/lectures/:lectureId',
         component: LectureDetail,
         meta: { title: 'Clase', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'courses/:id/quiz',
         component: QuizView,
         meta: { title: 'Quiz', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'courses/:id/quiz/result',
         component: QuizResult,
         meta: { title: 'Resultado del quiz', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'courses/:id/quizzes/:quizId',
         component: QuizView,
         meta: { title: 'Quiz', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'courses/:id/quizzes/:quizId/result',
         component: QuizResult,
         meta: { title: 'Resultado del quiz', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'careers',
         component: Careers,
         meta: { title: 'Escuelas o Carreras', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'careers/:id',
         component: CareerDetail,
         meta: { title: 'Detalle de carrera', requiresAuth: true }
-      }
-      ,
+      },
       {
         path: 'profile/edit',
         component: ProfileEdit,
@@ -105,6 +103,10 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'Mis Certificados', requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/onboarding',
+    redirect: '/'
   },
   {
     path: '/landing-page',
@@ -144,8 +146,7 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       { path: '', component: Checkout }
     ]
-  }
-  ,
+  },
   {
     path: '/pay-response',
     component: PublicLayout,
@@ -181,17 +182,19 @@ const router = createRouter({
   }
 })
 
-router.beforeEach((to) => {
+router.beforeEach((to, from, next) => {
   const hasToken = !!localStorage.getItem('access_token')
   const requiresAuth = to.matched.some((record) => record.meta?.requiresAuth)
 
   if (requiresAuth && !hasToken) {
-    return { path: '/landing-page', replace: true }
+    return next({ path: '/landing-page', replace: true })
   }
 
   if (to.path === '/login' && hasToken) {
-    return { path: '/', replace: true }
+    return next({ path: '/', replace: true })
   }
+
+  next()
 })
 
 export default router
