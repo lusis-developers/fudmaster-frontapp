@@ -196,7 +196,7 @@ onMounted(fetchComments)
           </button>
           <button class="reply" @click="onToggleReplies(c)" :aria-expanded="isRepliesOpen(c)">
             <i class="fa-regular fa-comment-dots" /> {{ discussionLabel(c) }}
-            <span v-if="replyCountOf(c) !== null && replyCountOf(c)!==0" class="badge">{{ replyCountOf(c) }}</span>
+            <span v-if="replyCountOf(c) !== null && replyCountOf(c) !== 0" class="badge">{{ replyCountOf(c) }}</span>
           </button>
         </div>
         <div v-if="openReplies[String(c._id || c.id)]" class="replies">
@@ -232,44 +232,243 @@ onMounted(fetchComments)
 <style lang="scss" scoped>
 .comments {
   display: grid;
-  gap: 12px;
+  gap: 20px;
 }
 
 .title {
   color: var(--text);
-  font-size: 18px;
+  font-size: 20px;
   margin: 0;
   display: inline-flex;
   align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.count {
+  background: color-mix(in oklab, var(--bg), var(--text) 4%);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: color-mix(in oklab, var(--text), transparent 40%);
+  font-size: 14px;
+}
+
+.state.error {
+  color: $alert-error;
+}
+
+/* Composer */
+.composer {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.input {
+  width: 100%;
+  resize: vertical;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.send {
+  justify-self: end;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 24px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+/* List */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 24px;
+}
+
+.item {
+  display: grid;
+  gap: 12px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: color-mix(in oklab, var(--text), transparent 50%);
+}
+
+.author {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+
+  i {
+    color: color-mix(in oklab, var(--text), transparent 70%);
+  }
+}
+
+.content {
+  color: color-mix(in oklab, var(--text), transparent 10%);
+  margin: 0;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.like,
+.reply {
+  background: none;
+  border: none;
+  color: color-mix(in oklab, var(--text), transparent 40%);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: color-mix(in oklab, var(--bg), var(--text) 4%);
+    color: var(--text);
+  }
+}
+
+.like {
+  i.fa-solid {
+    color: $alert-error;
+  }
+}
+
+.reply .badge {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Replies */
+.replies {
+  margin-top: 12px;
+  border-left: 2px solid color-mix(in oklab, var(--border), transparent 50%);
+  margin-left: 12px;
+  padding-left: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+.replies-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.reply-item {
+  background: color-mix(in oklab, var(--bg), var(--text) 1%);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: grid;
   gap: 8px;
 }
 
-.count { background: color-mix(in oklab, var(--bg), var(--text) 6%); color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+.reply-composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+}
 
-.state { display: inline-flex; align-items: center; gap: 8px; color: color-mix(in oklab, var(--text), transparent 40%); }
-.state.error { color: $alert-error; }
-.composer { display: grid; gap: 10px; }
-.input { width: 100%; resize: vertical; padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-family: inherit; background: var(--bg); color: var(--text); }
-.input::placeholder { color: color-mix(in oklab, var(--text), transparent 50%); }
-.send { align-self: end; background: var(--accent); color: $white; border: none; border-radius: 999px; padding: 8px 12px; cursor: pointer; }
-.list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
-.composer-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
-.preview-label { color: color-mix(in oklab, var(--text), transparent 50%); font-size: 12px; }
-.meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: color-mix(in oklab, var(--text), transparent 60%); }
-.author { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
-.date { color: color-mix(in oklab, var(--text), transparent 50%); }
-.content { color: color-mix(in oklab, var(--text), transparent 15%); margin: 0; }
-.actions { display: inline-flex; align-items: center; gap: 10px; }
-.preview-actions button { cursor: default; }
-.preview-actions button:disabled { opacity: 0.6; }
-.like { background: none; border: none; color: $alert-error; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.reply { background: none; border: none; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.reply .badge { background: color-mix(in oklab, var(--bg), var(--text) 6%); color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 2px 6px; font-size: 11px; }
-.replies { border-left: 2px solid var(--border); margin-left: 8px; padding-left: 12px; display: grid; gap: 8px; }
-.replies-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.reply-item { background: color-mix(in oklab, var(--bg), var(--text) 6%); border: 1px solid var(--border); border-radius: 10px; padding: 8px; display: grid; gap: 6px; }
-.reply-composer { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
-.reply-input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); }
-@media (max-width: 600px) { .input { font-size: 14px; } }
+.reply-input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+@media (max-width: 600px) {
+  .comments {
+    gap: 16px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .reply-composer {
+    grid-template-columns: 1fr;
+  }
+
+  .send {
+    width: 100%;
+    justify-content: center;
+  }
+}
 </style>
