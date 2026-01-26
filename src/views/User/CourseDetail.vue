@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUserStore } from '@/stores/user'
 import PlaylistSidebar from '@/components/lecture/PlaylistSidebar.vue'
+import CourseLanding from '@/views/Landing/CourseLanding.vue'
 
 const route = useRoute()
 const router = useRouter()
 const store = useCoursesStore()
 const userStore = useUserStore()
+import UserSidebar from '@/components/UserSidebar.vue'
+import UserHeader from '@/components/UserHeader.vue'
+import PublicHeader from '@/components/PublicHeader.vue'
+
+const menuIsOpen = ref(false)
+function openCloseMenu() { menuIsOpen.value = !menuIsOpen.value }
+
+watch(() => route.fullPath, () => {
+  menuIsOpen.value = false
+});
 
 const id = computed(() => route.params.id as string)
 
@@ -97,95 +108,258 @@ async function startQuiz() {
   if (!id.value) return
   router.push(`/courses/${id.value}/quiz`)
 }
+
+const showLanding = computed(() => {
+  // If not logged in -> Landing
+  if (!userStore.isAuthenticated) return true
+
+  // If logged in, check if we have an enrollment error (meaning not enrolled)
+  // or logic dictates we don't have access.
+  // The store sets errorCode = 404 when "fetchProgress" fails due to not found (not enrolled).
+  if (store.errorCode === 404) return true
+
+  return false
+})
 </script>
 
 <template>
   <div class="course-detail">
-    <div class="container">
-      <div class="progress">
-        <div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
-        <div class="progress-meta">Progreso: {{ progressPercent }}% · {{ progressText }}</div>
-      </div>
-      <div v-if="store.loading" class="loading">
-        <i class="fa-solid fa-spinner fa-spin" /> Cargando curso...
-      </div>
+    <div v-if="store.loading && !store.currentCourse" class="loading-state">
+       <div class="spinner"><i class="fa-solid fa-spinner fa-spin" /></div>
+    </div>
 
-      <div v-else-if="store.errorCode === 404 || store.error === 'Not Found'" class="no-access">
-        <div class="no-access-icon">
-          <i class="fa-solid fa-lock" />
-        </div>
-        <h3>Whoops, no tienes acceso aquí</h3>
-        <p>Pero puedes acceder a la plataforma y desbloquear todo el contenido.</p>
-        <button class="cta-start" type="button" @click="router.push('/checkout')">
-          <i class="fa-solid fa-crown" />
-          <span>Ir al Checkout</span>
-        </button>
-      </div>
-
-      <div v-else-if="store.error" class="error">
-        <i class="fa-solid fa-triangle-exclamation" /> {{ store.error }}
-      </div>
-
-      <div v-else-if="!store.currentCourse" class="empty">
+    <!-- 404 Not Found (Course itself) -->
+    <div v-else-if="(!store.currentCourse && !store.loading) || (store.error && !store.currentCourse)" class="error-state">
+       <div class="empty">
         <i class="fa-regular fa-face-meh" /> No se encontró el curso.
       </div>
+    </div>
 
-      <div v-else>
-        <div class="header">
-          <div class="header-top">
-            <button class="back" type="button" @click="goBack"><i class="fa-solid fa-arrow-left" /> Volver</button>
-            <button class="cta-start small" type="button" :disabled="!resumeLectureId" @click="resumeLectureId && openLecture(resumeLectureId)">
-              <i :class="ctaIcon" /> 
-              <span>{{ ctaLabel }}</span>
-            </button>
-          </div>
-          <h2 class="title"><i class="fa-solid fa-graduation-cap" /> {{ store.currentCourse.name || store.currentCourse.title }}</h2>
-        </div>
-        <div class="content">
-          <div class="left">
-            <div class="cover">
-              <img :src="coverOf(store.currentCourse)" alt="course cover" />
+    <!-- LANDING PAGE (Public/Guest or Not Enrolled) -->
+    <div v-else-if="showLanding && store.currentCourse" class="landing-layout">
+       <PublicHeader />
+       <CourseLanding 
+         :course="store.currentCourse" 
+         :loading="store.loading" 
+       />
+    </div>
+
+    <!-- STUDENT DASHBOARD (Enrolled) -->
+    <!-- STUDENT DASHBOARD (Enrolled) + LAYOUT RECONSTRUCTION -->
+    <div v-else class="wrapper">
+      <div class="header-layout">
+        <UserHeader @toggle-sidebar="openCloseMenu" />
+      </div>
+      
+      <!-- Mobile Sidebar Overlay (Copied from UserLayout) -->
+      <button class="floating-menu-btn" type="button" @click="openCloseMenu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="overlay" v-if="menuIsOpen" @click.self="openCloseMenu">
+          <div class="overlay-panel">
+            <div class="overlay-head">
+               <img src="@/assets/iso-verde.png" alt="logo" class="overlay-logo" />
             </div>
-            <div class="info">
-              <p class="subtitle">{{ store.currentCourse.heading || store.currentCourse.shortDescription || store.currentCourse.description }}</p>
-              <div class="author" v-if="store.currentCourse.author_bio">
-                <span class="author-name"><i class="fa-solid fa-user" /> {{ store.currentCourse.author_bio.name }}</span>
-              </div>
-              <div class="actions">
-                <button class="cta-start" type="button" :disabled="!resumeLectureId" @click="resumeLectureId && openLecture(resumeLectureId)">
-                  <i :class="ctaIcon" /> 
-                  <span>{{ ctaLabel }}</span>
-                </button>
-                <button class="cta-quiz" type="button" @click="startQuiz">
-                  <i class="fa-solid fa-list-check" /> 
-                  <span>Iniciar quiz</span>
-                </button>
-              </div>
-            </div>
+            <UserSidebar :menuIsOpen="false" />
           </div>
-          <div class="right" v-if="Array.isArray(store.currentCourse.lecture_sections) && store.currentCourse.lecture_sections.length">
-            <PlaylistSidebar :sections="store.currentCourse.lecture_sections" :course-id="String(id)" :completed-lecture-ids="store.progress.completedLectureIds" />
-          </div>
+      </div>
+
+      <div class="layout">
+        <div class="layout-menu-wrapper">
+          <UserSidebar :menuIsOpen="menuIsOpen" />
         </div>
-        
+        <div class="layout-view-wrapper">
+           <!-- ACTUAL COURSE DETAIL CONTENT -->
+           <div class="container course-content-container">
+              <div class="progress">
+                <div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
+                <div class="progress-meta">Progreso: {{ progressPercent }}% · {{ progressText }}</div>
+              </div>
+              
+               <div class="header">
+                  <div class="header-top">
+                    <button class="back" type="button" @click="goBack"><i class="fa-solid fa-arrow-left" /> Volver</button>
+                    <button class="cta-start small" type="button" :disabled="!resumeLectureId" @click="resumeLectureId && openLecture(resumeLectureId)">
+                      <i :class="ctaIcon" /> 
+                      <span>{{ ctaLabel }}</span>
+                    </button>
+                  </div>
+                  <h2 class="title"><i class="fa-solid fa-graduation-cap" /> {{ store.currentCourse.name || store.currentCourse.title }}</h2>
+                </div>
+                <div class="content">
+                  <div class="left">
+                    <div class="cover">
+                      <img :src="coverOf(store.currentCourse)" alt="course cover" />
+                    </div>
+                    <div class="info">
+                      <p class="subtitle">{{ store.currentCourse.heading || store.currentCourse.shortDescription || store.currentCourse.description }}</p>
+                      <div class="author" v-if="store.currentCourse.author_bio">
+                        <span class="author-name"><i class="fa-solid fa-user" /> {{ store.currentCourse.author_bio.name }}</span>
+                      </div>
+                      <div class="actions">
+                        <button class="cta-start" type="button" :disabled="!resumeLectureId" @click="resumeLectureId && openLecture(resumeLectureId)">
+                          <i :class="ctaIcon" /> 
+                          <span>{{ ctaLabel }}</span>
+                        </button>
+                        <button class="cta-quiz" type="button" @click="startQuiz">
+                          <i class="fa-solid fa-list-check" /> 
+                          <span>Iniciar quiz</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="right" v-if="Array.isArray(store.currentCourse.lecture_sections) && store.currentCourse.lecture_sections.length">
+                    <PlaylistSidebar :sections="store.currentCourse.lecture_sections" :course-id="String(id)" :completed-lecture-ids="store.progress.completedLectureIds" />
+                  </div>
+                </div>
+           </div>
+           <!-- END CONTENT -->
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.course-detail {
-  width: 100%;
-  padding: 24px 16px;
+// --- LAYOUT STYLES (Copied from UserLayout) ---
+.wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
+
+  .header-layout {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+
+  .floating-menu-btn {
+    display: none;
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: color-mix(in oklab, var(--text), transparent 68%);
+    z-index: 1000;
+  }
+
+  .overlay-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    max-width: 280px;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba($FUDMASTER-DARK, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .overlay-head {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .overlay-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
 }
 
-.container {
-  max-width: 1280px; // Prevent looking too wide on large screens
+.layout {
+  flex: 1 1 auto;
+  display: flex;
+  overflow: hidden;
+
+  &-menu-wrapper {
+    width: 100%;
+    max-width: fit-content;
+    min-width: 24px;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+
+  &-view-wrapper {
+    width: 100%;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 1024px) {
+  .wrapper {
+    .floating-menu-btn {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      z-index: 1100;
+      background: var(--accent);
+      color: $white;
+      border: none;
+      border-radius: 999px;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px color-mix(in oklab, var(--text), transparent 80%);
+      cursor: pointer;
+    }
+
+    .floating-menu-btn:active {
+      filter: brightness(0.95);
+    }
+
+    .layout {
+      &-menu-wrapper {
+        display: none;
+      }
+    }
+
+    .overlay {
+      display: block;
+    }
+  }
+}
+
+// --- CONTENT STYLES ---
+
+.course-detail {
+  width: 100%;
+  // padding removed here as it is handled by layout/wrapper now
+  background: var(--bg);
+  color: var(--text);
+
+  // If showing landing/error, we take full height
+  &,
+  .loading-state,
+  .error-state,
+  .landing-layout {
+    min-height: 100vh;
+  }
+}
+
+.landing-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+.course-content-container {
+  max-width: 1280px;
   margin: 0 auto;
   display: grid;
   gap: 16px;
+  padding: 24px 16px; // Add padding here
 }
 
 // ... existing styles ...
@@ -197,8 +371,7 @@ async function startQuiz() {
   .header-top {
     display: flex;
     align-items: center;
-    gap: 16px; // Keep them close instead of space-between
-    // removed justify-content: space-between
+    gap: 16px;
   }
 }
 
