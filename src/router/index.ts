@@ -53,11 +53,6 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'Todos los cursos', requiresAuth: true }
       },
       {
-        path: 'courses/:id',
-        component: CourseDetail,
-        meta: { title: 'Detalle de curso', requiresAuth: true }
-      },
-      {
         path: 'courses/:id/lectures/:lectureId',
         component: LectureDetail,
         meta: { title: 'Clase', requiresAuth: true }
@@ -107,6 +102,13 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/onboarding',
     redirect: '/'
+  },
+  {
+    path: '/courses/:id',
+    component: CourseDetail,
+    meta: {
+      title: 'Detalle del curso'
+    }
   },
   {
     path: '/landing-page',
