@@ -18,7 +18,7 @@ useHead({
     { name: 'twitter:description', content: 'Plataforma de formación gastronómica para todos los niveles.' },
   ],
   link: [
-    { rel: 'canonical', href: 'https://fudmaster.com' } // Adjust to real domain
+    { rel: 'canonical', href: 'https://fudmaster.com.ec' } // Adjust to real domain
   ]
 })
 

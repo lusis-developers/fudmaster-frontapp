@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://fudmaster.com/</loc>
+    <loc>https://fudmaster.com.ec/</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://fudmaster.com/landing-page</loc>
+    <loc>https://fudmaster.com.ec/landing-page</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fudmaster.com/login</loc>
+    <loc>https://fudmaster.com.ec/login</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://fudmaster.com/checkout</loc>
+    <loc>https://fudmaster.com.ec/checkout</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>

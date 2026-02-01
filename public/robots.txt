@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fudmaster.com/sitemap.xml
+Sitemap: https://fudmaster.com.ec/sitemap.xml
